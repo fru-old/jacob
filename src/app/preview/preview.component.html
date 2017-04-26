@@ -1,9 +1,9 @@
 <div *ngFor="let element of elements">
-  <div class="jacob-element" *ngIf="element._jacob && element._jacob.box"
+  <div #elementView class="jacob-element" *ngIf="element._jacob && element._jacob.box"
     [style.left] = "element._jacob.box.x + 'px'"
     [style.top]  = "element._jacob.box.y + 'px'"
     [style.width]  = "element._jacob.box.width + 'px'"
     [style.height] = "element._jacob.box.height + 'px'">
   </div>
-  <jacob-preview *ngIf="element.elements" [elements]="element.elements"></jacob-preview>
+  <jacob-preview *ngIf="element.elements" [elements]="element.elements" [dndBackend]="dndBackend" [dndRegistry]="dndRegistry"></jacob-preview>
 </div>

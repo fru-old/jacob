@@ -7,11 +7,13 @@ import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
 import { JacobPreviewComponent } from './preview/preview.component';
+import { JacobPreviewOuterComponent } from './preview/preview-outer.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    JacobPreviewComponent
+    JacobPreviewComponent,
+	JacobPreviewOuterComponent
   ],
   imports: [
     BrowserModule,

@@ -3,7 +3,7 @@ export type BoundingBox = {x: number, y: number, width: number, height: number}
 export abstract class BoundingBoxElement {
   public abstract getBoundingBox(): BoundingBox;
 
-  public static SumBoxes(boxes: BoundingBox[]): BoundingBox {
+  public static sumBoxes(boxes: BoundingBox[]): BoundingBox {
     var minX = null, minY = null, maxX = null, maxY = null;
     for (let box of boxes) {
       if (minX === null || box.x <= minX) minX = box.x;
@@ -14,7 +14,7 @@ export abstract class BoundingBoxElement {
     return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
   }
 
-  public static GetBoundingBox(element) { // crossbrowser version
+  public static getBoundingBox(element) { // crossbrowser version
     var box = element.getBoundingClientRect();
 
     var body = document.body;

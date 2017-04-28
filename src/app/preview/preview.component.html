@@ -4,6 +4,10 @@
     [style.top]  = "element._jacob.box.y + 'px'"
     [style.width]  = "element._jacob.box.width + 'px'"
     [style.height] = "element._jacob.box.height + 'px'">
+	<div class="target top"></div>
+	<div class="target bottom"></div>
+	<div class="target left"></div>
+	<div class="target right"></div>
   </div>
   <jacob-preview *ngIf="element.elements" [elements]="element.elements" [dndBackend]="dndBackend" [dndRegistry]="dndRegistry"></jacob-preview>
 </div>

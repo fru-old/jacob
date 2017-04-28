@@ -28,10 +28,11 @@ class TestTarget {
 @Component({
   selector: 'jacob-preview-outer',
   template: `
-	<div #target style="height: 800px">
+	<div #target style="height: 800px" class="preview-outer-wrapper">
 		<jacob-preview [elements]="elements" [dndBackend]="backend" [dndRegistry]="registry"></jacob-preview>
 	</div>
-  `
+  `,
+  styleUrls: ['./preview-outer-component.scss']
 })
 export class JacobPreviewOuterComponent {
   @Input() elements
@@ -45,7 +46,6 @@ export class JacobPreviewOuterComponent {
   }
   ngAfterViewInit() {
 	let target = new TestTarget({name: 'target'});
-	console.log(this.target.nativeElement);
 	this.backend.connectDropTarget(this.registry.addTarget('default', target), this.target.nativeElement);
   }
 }

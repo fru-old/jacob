@@ -1,4 +1,42 @@
 .jacob-element {
   position: absolute;
-  border: 1px solid grey;
+  
+  $border-width: 2px;
+  $shadow-width: 2px;
+  
+  border: $border-width solid #6e7275;
+  background-color: #eef2f5;
+  cursor: default;
+  
+  .target {
+	background-color: #67d7cb;
+	position: absolute;
+	  &.top, &.bottom {
+		left: 0;
+		right: 0;
+		height: $shadow-width;
+	  }
+	
+	  &.top {
+		top: -($border-width + $shadow-width);
+	  }
+	  
+	  &.bottom {
+		bottom: -($border-width + $shadow-width);
+	  }
+	  
+	  &.right, &.left {
+		top: 0;
+		bottom: 0;
+		width: $shadow-width;
+	  }
+	  
+	  &.right {
+		right: -($border-width + $shadow-width);
+	  }
+	  
+	  &.left {
+		left: -($border-width + $shadow-width);
+	  }
+  }
 }

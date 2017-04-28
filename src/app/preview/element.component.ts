@@ -36,6 +36,6 @@ export class JacobElementComponent implements OnInit, BoundingBoxElement {
   }
 
   getBoundingBox(): BoundingBox {
-    return BoundingBoxElement.GetBoundingBox(this.wrapper.nativeElement);
+    return BoundingBoxElement.getBoundingBox(this.wrapper.nativeElement);
   }
 }

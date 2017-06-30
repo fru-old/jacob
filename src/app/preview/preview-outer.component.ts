@@ -3,7 +3,7 @@ import { Component, Input, ViewChild } from '@angular/core';
 // Workaround for untyped modules
 declare var require: any;
 let { TouchBackend } = require('react-dnd-touch-backend');
-let dnd = require('dnd-core');
+//let dnd = require('dnd-core');
 
 
 class TestTarget {
@@ -14,11 +14,11 @@ class TestTarget {
     return true;
   }
 
-  hover() { 
+  hover() {
 	console.log('hover', arguments);
   }
 
-  drop() { 
+  drop() {
 	console.log('drop', arguments);
 	return this.result;
   }

@@ -45,6 +45,8 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "node-sass": "^4.5.2",
     "protractor": "~5.1.0",
+    "rbush": "^2.0.1",
+    "rbush-knn": "^2.0.0",
     "ts-node": "~2.0.0",
     "tslint": "~4.5.0",
     "typescript": "~2.2.0"

@@ -1,125 +1,154 @@
-import { Component, OnInit, ViewChildren, QueryList, Input, ContentChildren } from '@angular/core';
+import { Component, ViewChildren, QueryList, Input, ContentChildren } from '@angular/core';
+import { ElementRef, Inject, ViewEncapsulation } from '@angular/core';
+import { OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { GridElement } from './elements/grid.element';
 import { InputElement } from './elements/input.element';
-
-
-@Component({
-  selector: 'alert',
-  template: `
-    <h1 (click)="alert()">{{type}}</h1>
-  `,
-})
-export class Alert {
-  @Input() type: string = "success";
-
-  alert() {
-    console.log("alert");
-  }
-}
-
-@Component({
-  selector: 'alert-sub-list',
-  template: `
-    <div *ngFor="let item of [1, 2, 3]">
-      t--est
-      <alert><alert type="type"></alert></alert>
-    </div>
-    <alert type="danger"></alert>
-    <alert type="info"></alert>
-  `,
-})
-export class AlertSubList {
-  //@ViewChildren(Alert) alerts: QueryList<Alert>
-
-  ngAfterViewInit() {
-    //this.alerts.forEach(alertInstance => console.log("---" + alertInstance));
-  }
-}
-
-@Component({
-  selector: 'alert-list',
-  template: `
-    <ng-content></ng-content>
-  `,
-})
-export class AlertList {
-  @ContentChildren(Alert) alerts: QueryList<Alert>
-
-  ngAfterContentInit() {
-    console.log('!!!!!!');
-    this.alerts.forEach(alertInstance => console.log(alertInstance));
-  }
-}
-
+import { BackendFacade } from './drag.backend';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements OnInit {
-  content = [{
-    type: GridElement,
-    elements: [
-      {type: InputElement, _jacob: null},
-      {type: InputElement, _jacob: null},
-      {type: InputElement, _jacob: null}
-    ]
-  }];
-
-  ngOnInit() {
-    setInterval(() => { this.recalculateBoundingBoxes(this.content); }, 200);
-  }
-
-  recalculateBoundingBoxes (elements) {
-    for ( let element of elements ) {
-      if (element.elements) this.recalculateBoundingBoxes(element.elements);
-      if (element._jacob) {
-        element._jacob.box = element._jacob.element.getBoundingBox();
-      }
-    }
-  }
-
-  add() {
-    this.content[0].elements.push({type: InputElement, _jacob: null});
-  }
-
-  switch(i,j) {
-    var inputs = this.content[0].elements;
-    var elI = inputs[i];
-    var elJ = inputs[j];
-    inputs[i] = elJ;
-    inputs[j] = elI;
-
-    elI._jacob.transition = { from: elI._jacob.box, time: 300, start: Date.now() };
-    elJ._jacob.transition = { from: elJ._jacob.box, time: 300, start: Date.now() };
-    var t1 = setInterval(() => { if(!this.recalculateTransitionAnimation(elI)) clearInterval(t1) }, 1);
-    var t2 = setInterval(() => { if(!this.recalculateTransitionAnimation(elJ)) clearInterval(t2) }, 1);
-  }
-
-  recalculateTransitionAnimation(element) {
-    if (!element._jacob) return;
-    let box = element._jacob.box = element._jacob.element.getBoundingBox();
-    let transition = element._jacob.transition;
-    if (transition && transition.from && transition.start > Date.now() - transition.time) {
-      let p =  (Date.now() - transition.start) / transition.time;
-      element._jacob.offset = {
-        x: (1-p) * (transition.from.x - box.x),
-        y: (1-p) * (transition.from.y - box.y),
-      };
-      element._jacob.element.updateRelativePosition();
-      return true;
-    } else {
-      element._jacob.transition = null;
-      element._jacob.offset = null;
-      element._jacob.element.updateRelativePosition();
-      return false;
-    }
-  }
-
-
-
-  print() {
-    console.log(this.content);
+export class AppComponent {
+  tree : any = [
+    {title: '1'},
+    {title: '2'},
+    {title: '3', children: [
+      {title: '3.1'},
+      {title: '3.2'}
+    ]},
+    [{title: '4.1'}, {title: '4.2'}]
+  ]
+  action () {
   }
 }
+
+
+@Component({
+  selector: '[droplet-root]',
+  template: `<ng-content></ng-content>`
+})
+export class DropletRoot implements OnInit {
+  @Input() context: any;
+
+  constructor (@Inject(ElementRef) private componentRef: ElementRef) {}
+
+  ngOnInit () {
+    this.context.__backend = new BackendFacade();
+    this.context.__backend.registerRoot(this.componentRef.nativeElement);
+  }
+}
+
+var droppletInnerTemplate = `
+  <droplet-inner
+    [index]="index"
+    [parent]="parent"
+    [context]="context"
+    [preview]="parent[index].__preview?.componentRef?.nativeElement"
+    [isPreview]="isPreview">
+    <ng-content></ng-content>
+  </droplet-inner>
+`;
+
+@Component({
+  selector: '[droplet]',
+  template: droppletInnerTemplate
+})
+export class Droplet {
+  @Input() index: number;
+  @Input() parent: any[];
+  @Input() context: any;
+  isPreview = false;
+}
+
+@Component({
+  selector: '[droplet-preview]',
+  template: droppletInnerTemplate
+})
+export class DropletPreview {
+  @Input() index: number;
+  @Input() parent: any[];
+  @Input() context: any;
+  isPreview = true;
+  constructor (@Inject(ElementRef) public componentRef: ElementRef) {}
+}
+
+@Component({
+  selector: 'droplet-inner',
+  template: `<ng-content></ng-content>`
+})
+export class DropletInner implements OnChanges, OnDestroy {
+  private static globalCounter: number = 1;
+
+  @Input() index: number;
+  @Input() parent: any[];
+  @Input() preview: any;
+  @Input() context: any;
+  @Input() isPreview: boolean;
+
+  private lastParent: any[];
+  private lastIndex: number;
+  private lastPreview:any;
+  private id: number;
+  private removeListener: () => void;
+
+  constructor (@Inject(ElementRef) private componentRef: ElementRef) {
+    this.id = DropletInner.globalCounter++;
+  }
+
+  ngOnDestroy () {
+    this.removeRegister();
+  }
+
+  removeRegister () {
+    if (!this.lastParent) return;
+    let lastItem = this.lastParent[this.lastIndex];
+    if (this.isPreview) {
+      lastItem.__preview = null;
+    } else {
+      delete lastItem.__handlers[this.id];
+    }
+  }
+
+  addRegister () {
+    var item = this.parent[this.index];
+    if (this.isPreview) {
+      if (item.__preview && item.__preview !== this) throw "Only one preview allowed per object."
+      item.__preview = this;
+    } else {
+      if (!item.__handlers) item.__handlers = {};
+      item.__handlers[this.id] = this;
+    }
+  }
+
+  hasParentOrIndexChanged () {
+    return this.parent !== this.lastParent || this.index !== this.lastIndex;
+  }
+
+  hasPreviewChanged () {
+    return this.preview !== this.lastPreview;
+  }
+
+  ngOnChanges(changes: any) {
+    setTimeout(() => {
+      if (this.hasParentOrIndexChanged()) {
+        this.removeRegister();
+        this.lastParent = this.parent;
+        this.lastIndex = this.index;
+      }
+      if (this.hasPreviewChanged()) {
+        if (this.removeListener) this.removeListener();
+        this.lastPreview = this.preview;
+      }
+      this.addRegister();
+      if (!this.removeListener) {
+        var el = this.componentRef.nativeElement;
+        this.removeListener = this.context.__backend.registerSource(el, this.id, this.preview);
+      }
+    });
+  }
+}
+
+// https://stackoverflow.com/questions/38130705/set-component-style-from-variable-in-angular-2

@@ -1,18 +1,47 @@
-.border-glow {
-    outline: none;
-    border: 1px solid rgba(65,149,252,0.55);
-    border-radius: 2px;
-    box-shadow: 0 0 14px #9ecaed;
-    margin: -4px;
-    padding: 3px;
+@mixin clearfix-micro() {
+    & {
+        *zoom: 1;
+    }
+    &:before,
+    &:after {
+        content: "";
+        display: table;
+    }
+    &:after {
+        clear: both;
+    }
 }
 
-.jacob-js-anchor {
-  position: relative;
+.tree-element {
+  margin: 0 8px 8px 0;
+  display: block;
+  @include clearfix-micro();
 }
 
-// element.getBoundingClientRect();
-.jacob-js-animation {
-  position: relative;
-  top: -0;
+.tree-element > droplet-inner {
+  padding: 8px;
+  display: block;
+}
+
+.tree-root {
+  @include clearfix-micro();
+  padding: 8px 0 0 8px;
+}
+
+// Default theme
+
+ul {
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+.tree-element {
+  border: 1px solid #dae2ea;
+  background: #f8faff;
+  color: #7c9eb2;
+  font-size: 13px;
+  button {
+    float: right;
+    margin: -3px;
+  }
 }

@@ -1,21 +1,22 @@
-<div class="container">
-  <jacob [elements]=content></jacob>
-</div>
 
-<button (click)="add()">Add InputAS</button>
-<button (click)="switch(0,1)">Switch</button>
-<button (click)="print()">Print</button>
+<ul class="tree-root" droplet-root [context]="tree">
+  <li droplet-preview [parent]="tree" [index]="0" [context]="tree">
+    <span class="tree-element" droplet [parent]="tree" [index]="0" [context]="tree">
+      node1 <button>Action</button>
+    </span>
+  </li>
+  <li droplet-preview [parent]="tree" [index]="1" [context]="tree">
+    <span class="tree-element" droplet [parent]="tree" [index]="1" [context]="tree">
+      node1 <button>Action</button>
+    </span>
+    <ul>
+      <li droplet-preview [parent]="tree" [index]="3" [context]="tree">
+        <span class="tree-element" droplet [parent]="tree" [index]="3" [context]="tree">
+          node1 <button>Action</button>
+        </span>
+      </li>
+    </ul>
+  </li>
+</ul>
 
-<div style="position: relative">
-  <jacob-preview-outer [elements]=content></jacob-preview-outer>
-</div>
-
-<alert-list>
-  <div *ngFor="let item of [1, 2, 3]">
-    test
-    <alert-list>
-      <alert type="type"><alert type="type"></alert></alert>
-    </alert-list>
-
-  </div>
-</alert-list>
+<button (click)="action()">Action</button>

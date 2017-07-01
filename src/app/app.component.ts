@@ -1,6 +1,56 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList, Input, ContentChildren } from '@angular/core';
 import { GridElement } from './elements/grid.element';
 import { InputElement } from './elements/input.element';
+
+
+@Component({
+  selector: 'alert',
+  template: `
+    <h1 (click)="alert()">{{type}}</h1>
+  `,
+})
+export class Alert {
+  @Input() type: string = "success";
+
+  alert() {
+    console.log("alert");
+  }
+}
+
+@Component({
+  selector: 'alert-sub-list',
+  template: `
+    <div *ngFor="let item of [1, 2, 3]">
+      t--est
+      <alert><alert type="type"></alert></alert>
+    </div>
+    <alert type="danger"></alert>
+    <alert type="info"></alert>
+  `,
+})
+export class AlertSubList {
+  //@ViewChildren(Alert) alerts: QueryList<Alert>
+
+  ngAfterViewInit() {
+    //this.alerts.forEach(alertInstance => console.log("---" + alertInstance));
+  }
+}
+
+@Component({
+  selector: 'alert-list',
+  template: `
+    <ng-content></ng-content>
+  `,
+})
+export class AlertList {
+  @ContentChildren(Alert) alerts: QueryList<Alert>
+
+  ngAfterContentInit() {
+    console.log('!!!!!!');
+    this.alerts.forEach(alertInstance => console.log(alertInstance));
+  }
+}
+
 
 @Component({
   selector: 'app-root',

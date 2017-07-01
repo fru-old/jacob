@@ -9,3 +9,13 @@
 <div style="position: relative">
   <jacob-preview-outer [elements]=content></jacob-preview-outer>
 </div>
+
+<alert-list>
+  <div *ngFor="let item of [1, 2, 3]">
+    test
+    <alert-list>
+      <alert type="type"><alert type="type"></alert></alert>
+    </alert-list>
+
+  </div>
+</alert-list>

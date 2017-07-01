@@ -5,15 +5,18 @@ import { HttpModule } from '@angular/http';
 import { ElementModule } from './elements/element.module';
 import { CommonModule } from '@angular/common';
 
-import { AppComponent } from './app.component';
+import { AppComponent, AlertList, Alert, AlertSubList } from './app.component';
 import { JacobPreviewComponent } from './preview/preview.component';
 import { JacobPreviewOuterComponent } from './preview/preview-outer.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    AlertList,
+    Alert,
+    AlertSubList,
     JacobPreviewComponent,
-	JacobPreviewOuterComponent
+	  JacobPreviewOuterComponent
   ],
   imports: [
     BrowserModule,

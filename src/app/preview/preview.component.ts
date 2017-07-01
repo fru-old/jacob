@@ -13,7 +13,7 @@ class TestSource {
 	console.log('endDrag', arguments);
     console.log(monitor.getDropResult());
   }
-  
+
   canDrag() {
 	console.log('canDrag', arguments);
     return true;
@@ -25,6 +25,7 @@ class TestSource {
   }
 }
 
+var xyz = false;
 @Component({
   selector: 'jacob-preview',
   templateUrl: './preview.component.html',
@@ -34,18 +35,23 @@ export class JacobPreviewComponent {
   @Input() elements
   @Input() dndBackend
   @Input() dndRegistry
-  
+
   @ViewChildren('elementView') elementViews
-  
+
   ngAfterViewChecked() {
+    if(xyz) return;
+
 	for(var i = 0; i < this.elementViews._results.length; i++) {
 		var  jacob = this.elements[i]._jacob;
 		var native = this.elementViews._results[i].nativeElement;
 		if (jacob.registered !== native) {
-			jacob.registered = native;
-			console.log(native);
-			let source = new TestSource({name: 'sources ???'});
-			let undoSource = this.dndBackend.connectDragSource(this.dndRegistry.addSource('default', source), native);
+			//jacob.registered = native;
+			//console.log(native);
+			//let source = new TestSource({name: 'sources ???'});
+      console.log(native);
+			let undoSource = this.dndBackend.connectDragSource('S'+i, native);
+      this.dndBackend.connectDragPreview('S'+i, document.body);
+      xyz = true;
 		}
 	}
   }

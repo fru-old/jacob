@@ -1,24 +1,45 @@
 //let { Backend } = require('react-dnd-touch-backend');
 import Backend from 'react-dnd-html5-backend';
+import rbush from 'rbush';
 
 export class BackendFacade {
 
   private backend: Backend;
+  private getDropTargets: any;
+  private highlight: any
+  private engine: any;
 
   constructor () {
+    this.engine = rbush();
     var isDragging: any = false;
     var source: any = null;
+    var self = this;
+
     this.backend = new Backend({
       getActions: function() {
         return {
-          beginDrag: function(s, o) {console.log('beginDrag'); source = s; isDragging = !!s.length; },
-          publishDragSource: function() {
-            console.log('publishDragSource');
-            console.log(isDragging.clientOffset);
+          beginDrag: function(s, o) {
+            source = s;
+            isDragging = !!s.length;
+            self.updateDropZones();
           },
-          hover: function(_, x) {console.log('hover', x);},
-          drop: function() {console.log('drop');},
-          endDrag: function() {console.log('endDrag'); isDragging = false;}
+          publishDragSource: function() {},
+          hover: function(_, {clientOffset}) {
+            var matches = self.engine.search({
+              minX: clientOffset.x,
+              maxX: clientOffset.x,
+              minY: clientOffset.y,
+              maxY: clientOffset.y
+            });
+            console.log(matches);
+
+            self.highlight.x = 10;
+            self.highlight.y = 10;
+            self.highlight.width = 10;
+            self.highlight.height = 10;
+          },
+          drop: function(_, {clientOffset}) { console.log('drop', clientOffset); },
+          endDrag: function() { isDragging = false; }
         };
       },
       getMonitor: function() {
@@ -39,7 +60,9 @@ export class BackendFacade {
     }, { enableMouseEvents: true });
     this.backend.setup();
   }
-  registerRoot (root: any) {
+  registerRoot (root: any, getDropTargets: any, highlight: any) {
+    this.getDropTargets = getDropTargets;
+    this.highlight = highlight;
     this.backend.connectDropTarget('root', root);
   }
   registerSource (source: any, id: number, preview: any) {
@@ -51,5 +74,11 @@ export class BackendFacade {
       undoSource();
       undoPreview();
     };
+  }
+  updateDropZones () {
+    this.engine.clear();
+    for(let dropzone of this.getDropTargets()) {
+      this.engine.insert(dropzone.position);
+    }
   }
 }

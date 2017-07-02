@@ -31,7 +31,7 @@ export class AppComponent {
     <div class="highlight"
       *ngIf="this.context.__isDragging"
       [style.top.px]="this.context.__highlight.x"
-      [style.right.px]="this.context.__highlight.y"
+      [style.left.px]="this.context.__highlight.y"
       [style.width.px]="this.context.__highlight.width"
       [style.height.px]="this.context.__highlight.height">
   `
@@ -46,12 +46,13 @@ export class DropletRoot implements OnInit {
     this.context.__highlight = {};
     this.context.__handlers = {};
     this.context.__backend = new BackendFacade();
-    this.context.__backend.registerRoot(this.componentRef.nativeElement, () => this.getDropTargets);
+    this.context.__backend.registerRoot(
+      this.componentRef.nativeElement, this.getDropTargets, this.context.__highlight);
   }
-  
-  // [{position, highlight: (original, current, dropzone) => position}]
+
+  // [{position, highlight: (original, current, dropzone) => position, drop: (original, current, dropzone) => void}]
   getDropTargets (handle: any, preview: any) {
-    return [];
+    return [{position: {minX: 10, maxX: 20, minY: 10, maxY: 20}}];
   }
 }
 

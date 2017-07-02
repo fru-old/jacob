@@ -21,14 +21,20 @@ export class AppComponent {
     ]},
     [{title: '4.1'}, {title: '4.2'}]
   ]
-  action () {
-  }
 }
 
 
 @Component({
   selector: '[droplet-root]',
-  template: `<ng-content></ng-content>`
+  template: `
+    <ng-content></ng-content>
+    <div class="highlight"
+      *ngIf="this.context.__isDragging"
+      [style.top.px]="this.context.__highlight.x"
+      [style.right.px]="this.context.__highlight.y"
+      [style.width.px]="this.context.__highlight.width"
+      [style.height.px]="this.context.__highlight.height">
+  `
 })
 export class DropletRoot implements OnInit {
   @Input() context: any;
@@ -36,8 +42,16 @@ export class DropletRoot implements OnInit {
   constructor (@Inject(ElementRef) private componentRef: ElementRef) {}
 
   ngOnInit () {
+    this.context.__isDragging = true;
+    this.context.__highlight = {};
+    this.context.__handlers = {};
     this.context.__backend = new BackendFacade();
-    this.context.__backend.registerRoot(this.componentRef.nativeElement);
+    this.context.__backend.registerRoot(this.componentRef.nativeElement, () => this.getDropTargets);
+  }
+  
+  // [{position, highlight: (original, current, dropzone) => position}]
+  getDropTargets (handle: any, preview: any) {
+    return [];
   }
 }
 
@@ -88,9 +102,10 @@ export class DropletInner implements OnChanges, OnDestroy {
   @Input() context: any;
   @Input() isPreview: boolean;
 
-  private lastParent: any[];
   private lastIndex: number;
+  private lastParent: any[];
   private lastPreview:any;
+  private lastContext: any;
   private id: number;
   private removeListener: () => void;
 
@@ -103,28 +118,31 @@ export class DropletInner implements OnChanges, OnDestroy {
   }
 
   removeRegister () {
-    if (!this.lastParent) return;
-    let lastItem = this.lastParent[this.lastIndex];
     if (this.isPreview) {
-      lastItem.__preview = null;
+      if (!this.lastParent) return;
+      this.lastParent[this.lastIndex].__preview = null;
     } else {
-      delete lastItem.__handlers[this.id];
+      if (!this.lastContext) return;
+      delete this.lastContext.__handlers[this.id];
     }
   }
 
   addRegister () {
-    var item = this.parent[this.index];
     if (this.isPreview) {
-      if (item.__preview && item.__preview !== this) throw "Only one preview allowed per object."
+      var item = this.parent[this.index];
+      if (item.__preview && item.__preview !== this) {
+          throw "Only one preview allowed per object."
+      }
       item.__preview = this;
     } else {
-      if (!item.__handlers) item.__handlers = {};
-      item.__handlers[this.id] = this;
+      this.context.__handlers[this.id] = this;
     }
   }
 
-  hasParentOrIndexChanged () {
-    return this.parent !== this.lastParent || this.index !== this.lastIndex;
+  hasBindingChanged () {
+    return this.parent !== this.lastParent
+        || this.index !== this.lastIndex
+        || this.context !== this.lastContext;
   }
 
   hasPreviewChanged () {
@@ -133,10 +151,11 @@ export class DropletInner implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: any) {
     setTimeout(() => {
-      if (this.hasParentOrIndexChanged()) {
+      if (this.hasBindingChanged()) {
         this.removeRegister();
         this.lastParent = this.parent;
         this.lastIndex = this.index;
+        this.lastContext = this.context;
       }
       if (this.hasPreviewChanged()) {
         if (this.removeListener) this.removeListener();

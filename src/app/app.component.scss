@@ -28,6 +28,10 @@
   padding: 8px 0 0 8px;
 }
 
+.highlight {
+  position: absolute;
+}
+
 // Default theme
 
 ul {
@@ -44,4 +48,8 @@ ul {
     float: right;
     margin: -3px;
   }
+}
+
+.highlight {
+  border: 1px solid blue;
 }

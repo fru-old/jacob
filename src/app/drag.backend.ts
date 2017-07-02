@@ -40,12 +40,12 @@ export class BackendFacade {
     this.backend.setup();
   }
   registerRoot (root: any) {
-    this.backend.connectDropTarget('T0', root);
+    this.backend.connectDropTarget('root', root);
   }
   registerSource (source: any, id: number, preview: any) {
     let undoSource, undoPreview;
-    undoSource = this.backend.connectDragSource('S' + id, source);
-    undoPreview = this.backend.connectDragPreview('S' + id, preview || source);
+    undoSource = this.backend.connectDragSource(id, source);
+    undoPreview = this.backend.connectDragPreview(id, preview || source);
 
     return function () {
       undoSource();

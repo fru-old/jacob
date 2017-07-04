@@ -107,8 +107,9 @@ export class DropletInner implements OnChanges, OnDestroy {
   private lastParent: any[];
   private lastPreview:any;
   private lastContext: any;
-  private id: number;
   private removeListener: () => void;
+
+  public readonly id: number;
 
   constructor (@Inject(ElementRef) private componentRef: ElementRef) {
     this.id = DropletInner.globalCounter++;
@@ -117,6 +118,19 @@ export class DropletInner implements OnChanges, OnDestroy {
   ngOnDestroy () {
     this.removeRegister();
   }
+
+  registerPreview () {
+    if (!this.isPreview || !this.lastParent) return;
+    var item = this.lastParent[this.lastIndex];
+    if (item.__preview && item.__preview !== this) {
+        throw "Only one preview allowed per object."
+    }
+    item.__preview = this;
+    return function () {
+      item.__preview = null;
+    }
+  }
+
 
   removeRegister () {
     if (this.isPreview) {

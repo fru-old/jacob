@@ -20,19 +20,19 @@ export interface DropletPosition <t extends DropletTarget> {
   current: DropletCoordinate
 }
 
-interface DropletRoot <t extends DropletTarget, s extends DropletSource> {
+export interface DropletRoot <t extends DropletTarget, s extends DropletSource> {
   getNativeElement(): HTMLElement;
   getDropTargets(): [t];
   highlight(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
   drop(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
 }
 
-interface DropletSource {
+export interface DropletSource {
   getNativeElement(): HTMLElement;
   getId(): string;
 }
 
-interface DropletPreview {
+export interface DropletPreview {
   getNativeElement(): HTMLElement;
 }
 
@@ -135,11 +135,11 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
     this.backend.connectDropTarget('root', root.getNativeElement());
   }
 
-  public connect(source: s, context: any) {
-    let preview = DropletBackend.getPreview(context).getNativeElement();
-    let element = source.getNativeElement();
-    let undoSource = this.backend.connectDragSource(source.getId(), element);
-    let undoPreview = this.backend.connectDragPreview(source.getId(), preview || element);
+  public connect(source: s, preview: DropletPreview) {
+    let sourceElement = source.getNativeElement();
+    let previewElement = (preview && preview.getNativeElement()) || sourceElement;
+    let undoSource = this.backend.connectDragSource(source.getId(), sourceElement);
+    let undoPreview = this.backend.connectDragPreview(source.getId(), previewElement);
 
     this.registered[source.getId()] = source;
     return () => {

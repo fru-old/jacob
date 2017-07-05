@@ -1,84 +1,163 @@
-//let { Backend } = require('react-dnd-touch-backend');
-import Backend from 'react-dnd-html5-backend';
+import { TouchBackend } from 'react-dnd-touch-backend';
+import HtmlBackend from 'react-dnd-html5-backend';
 import rbush from 'rbush';
 
-export class BackendFacade {
+export interface DropletCoordinate {
+  x: number;
+  y: number;
+}
 
-  private backend: Backend;
-  private getDropTargets: any;
-  private highlight: any
+export interface DropletTarget {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface DropletPosition <t extends DropletTarget> {
+  matches: [t],
+  begin: DropletCoordinate,
+  current: DropletCoordinate
+}
+
+interface DropletRoot <t extends DropletTarget, s extends DropletSource> {
+  getNativeElement(): HTMLElement;
+  getDropTargets(): [t];
+  highlight(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
+  drop(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
+}
+
+interface DropletSource {
+  getNativeElement(): HTMLElement;
+  getId(): string;
+}
+
+interface DropletPreview {
+  getNativeElement(): HTMLElement;
+}
+
+export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
+
+  private static getRBushRectangleFromTarget({x, y, width, height}) {
+    return {
+      minX: x, minY: y, maxX: x + width, maxY: y + height
+    }
+  }
+
+  private static getRBushRectangleFromCoordinate({x, y}) {
+    return DropletBackend.getRBushRectangleFromTarget({x, y, width: 0, height: 0});
+  }
+
+  private backend: HtmlBackend;
+  private root: DropletRoot<t, s>;
   private engine: any;
+  private registered: {[key: string]: s} = {};
 
-  constructor () {
-    this.engine = rbush();
-    var isDragging: any = false;
-    var source: any = null;
-    var self = this;
+  private isDragging: boolean = false;
+  private source: s;
+  private begin: DropletCoordinate;
 
-    this.backend = new Backend({
-      getActions: function() {
-        return {
-          beginDrag: function(s, o) {
-            source = s;
-            isDragging = !!s.length;
-            self.updateDropZones();
-          },
-          publishDragSource: function() {},
-          hover: function(_, {clientOffset}) {
-            var matches = self.engine.search({
-              minX: clientOffset.x,
-              maxX: clientOffset.x,
-              minY: clientOffset.y,
-              maxY: clientOffset.y
-            });
-            console.log(matches);
+  private getActions() {
+    function getMatchesAnSetBegin(current: DropletCoordinate): [t] {
+        if (!this.begin) this.begin = current;
+        var coordinate = DropletBackend.getRBushRectangleFromCoordinate(current);
+        return this.engine.search(coordinate);
+    }
 
-            self.highlight.x = 10;
-            self.highlight.y = 10;
-            self.highlight.width = 10;
-            self.highlight.height = 10;
-          },
-          drop: function(_, {clientOffset}) { console.log('drop', clientOffset); },
-          endDrag: function() { isDragging = false; }
-        };
+    return {
+      beginDrag: function(source: string, o) {
+        this.source = this.registered[source];
+        this.isDragging = !!source.length;
+        this.updateDropZones();
       },
-      getMonitor: function() {
-        return {
-          isDragging: function() {return !!isDragging;},
-          getSourceId: function() {return source;},
-          didDrop: function() {console.log('didDrop', arguments); return false;},
-          canDropOnTarget: function(){return false;},
-          getItemType: function(){}
-        }
+      publishDragSource: function() {},
+      hover: function(_, param: {clientOffset: DropletCoordinate}) {
+        var matches = this.getMatchesAnSetBegin(param.clientOffset);
+        this.root.highlight(this, matches, this.begin, param.clientOffset);
       },
-      getRegistry: function(){
-        return {
-          addSource: function() {}
-        }
+      drop: function(_, param: {clientOffset: DropletCoordinate}) {
+        var matches = this.getMatchesAnSetBegin(param.clientOffset);
+        this.root.drop(this, matches, this.begin, param.clientOffset);
       },
-      getContext: function(){return {window: window}}
+      endDrag: function() {
+        this.source = null;
+        this.begin = null;
+        this.isDragging = false;
+      }
+    };
+  }
+
+  private getMonitor() {
+    return {
+      isDragging: function() { return this.isDragging; },
+      getSourceId: function() { return this.source && this.source.getId(); },
+      didDrop: function() { return false; },
+      canDropOnTarget: function(){ return false; },
+      getItemType: function(){}
+    }
+  }
+
+  private getBackend() {
+    let backend = new HtmlBackend({
+      getActions: () => this.getActions(),
+      getMonitor: () => this.getMonitor(),
+      getRegistry: function () { return { addSource: function() {} } },
+      getContext: function() { return { window: window } }
     }, { enableMouseEvents: true });
-    this.backend.setup();
+    backend.setup();
+    return backend;
   }
-  registerRoot (root: any, getDropTargets: any, highlight: any) {
-    this.getDropTargets = getDropTargets;
-    this.highlight = highlight;
-    this.backend.connectDropTarget('root', root);
-  }
-  registerSource (source: any, id: number, preview: any) {
-    let undoSource, undoPreview;
-    undoSource = this.backend.connectDragSource(id, source);
-    undoPreview = this.backend.connectDragPreview(id, preview || source);
 
-    return function () {
+  public static setPreview(context: any, data: DropletPreview) {
+    // TODO
+    return function undo() {};
+  }
+
+  public static getPreview(context: any): DropletPreview {
+    // TODO
+    return null;
+  }
+
+  public static addSource(context: any, data: DropletSource) {
+    // TODO
+    return function undo() {};
+  }
+
+  public static getSources(context: any): [DropletSource] {
+    // TODO
+    return null;
+  }
+
+  public constructor(root: DropletRoot<t, s>) {
+    this.engine = rbush();
+    this.root = root;
+    this.backend = this.getBackend();
+    this.backend.connectDropTarget('root', root.getNativeElement());
+  }
+
+  public connect(source: s, context: any) {
+    let preview = DropletBackend.getPreview(context).getNativeElement();
+    let element = source.getNativeElement();
+    let undoSource = this.backend.connectDragSource(source.getId(), element);
+    let undoPreview = this.backend.connectDragPreview(source.getId(), preview || element);
+
+    this.registered[source.getId()] = source;
+    return () => {
+      delete this.registered[source.getId()];
       undoSource();
       undoPreview();
     };
   }
-  updateDropZones () {
+
+  public updateDropZones() {
     this.engine.clear();
-    for(let dropzone of this.getDropTargets()) {
-      this.engine.insert(dropzone.position);
+    for(let target of this.root.getDropTargets()) {
+      this.engine.insert(DropletBackend.getRBushRectangleFromTarget(target));
     }
+  }
+
+  public teardown() {
+    if(this.backend) this.backend.teardown();
+    if(this.engine) this.engine.clear();
   }
 }

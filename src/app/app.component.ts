@@ -3,7 +3,7 @@ import { ElementRef, Inject, ViewEncapsulation } from '@angular/core';
 import { OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { GridElement } from './elements/grid.element';
 import { InputElement } from './elements/input.element';
-import { BackendFacade } from './drag.backend';
+import { DropletBackend } from './drag.backend';
 
 @Component({
   selector: 'app-root',
@@ -78,6 +78,9 @@ export class Droplet {
   isPreview = false;
 }
 
+class
+
+
 @Component({
   selector: '[droplet-preview]',
   template: droppletInnerTemplate
@@ -129,6 +132,11 @@ export class DropletInner implements OnChanges, OnDestroy {
     return function () {
       item.__preview = null;
     }
+  }
+
+  registerHandler () {
+    var primary =
+    if (this.isPreview )
   }
 
 

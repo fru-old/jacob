@@ -22,7 +22,7 @@ export interface DropletPosition <t extends DropletTarget> {
 
 export interface DropletRoot <t extends DropletTarget, s extends DropletSource> {
   getNativeElement(): HTMLElement;
-  getDropTargets(): [t];
+  getDropTargets(source: s): [t];
   highlight(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
   drop(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
 }
@@ -68,7 +68,7 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
       beginDrag: function(source: string, o) {
         this.source = this.registered[source];
         this.isDragging = !!source.length;
-        this.updateDropZones();
+        this.updateDropZones(this.source);
       },
       publishDragSource: function() {},
       hover: function(_, param: {clientOffset: DropletCoordinate}) {
@@ -108,24 +108,41 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
     return backend;
   }
 
+  private static idCounter = 1;
+  public static getUniqueId() {
+    return DropletBackend.idCounter++;
+  }
+
+  private static getOrInitDropletProperty(context: any) {
+    if (!context.__droplet) context.__droplet = { sources: [] };
+    return context.__droplet;
+  }
+
   public static setPreview(context: any, data: DropletPreview) {
-    // TODO
-    return function undo() {};
+    var droplet = DropletBackend.getOrInitDropletProperty(context);
+    if (droplet.preview) throw 'Only one preview can be attached to the same object.';
+    droplet.preview = data;
+    return function undo() {
+      droplet.preview = null;
+    };
   }
 
   public static getPreview(context: any): DropletPreview {
-    // TODO
-    return null;
+    var droplet = DropletBackend.getOrInitDropletProperty(context);
+    return droplet.preview;
   }
 
   public static addSource(context: any, data: DropletSource) {
-    // TODO
-    return function undo() {};
+    var droplet = DropletBackend.getOrInitDropletProperty(context);
+    droplet.sources.push(data);
+    return function undo() {
+      droplet.sources = droplet.sources.filter(x => x === data);
+    };
   }
 
   public static getSources(context: any): [DropletSource] {
-    // TODO
-    return null;
+    var droplet = DropletBackend.getOrInitDropletProperty(context);
+    return droplet.sources;
   }
 
   public constructor(root: DropletRoot<t, s>) {
@@ -149,9 +166,9 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
     };
   }
 
-  public updateDropZones() {
+  public updateDropZones(source: s) {
     this.engine.clear();
-    for(let target of this.root.getDropTargets()) {
+    for(let target of this.root.getDropTargets(source)) {
       this.engine.insert(DropletBackend.getRBushRectangleFromTarget(target));
     }
   }

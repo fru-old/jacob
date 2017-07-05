@@ -45,7 +45,7 @@ export class DropletRoot implements OnInit {
     this.context.__isDragging = true;
     this.context.__highlight = {};
     this.context.__handlers = {};
-    this.context.__backend = new BackendFacade();
+    this.context.__backend = new DropletBackend();
     this.context.__backend.registerRoot(
       this.componentRef.nativeElement, this.getDropTargets, this.context.__highlight);
   }
@@ -122,22 +122,6 @@ export class DropletInner implements OnChanges, OnDestroy {
     this.removeRegister();
   }
 
-  registerPreview () {
-    if (!this.isPreview || !this.lastParent) return;
-    var item = this.lastParent[this.lastIndex];
-    if (item.__preview && item.__preview !== this) {
-        throw "Only one preview allowed per object."
-    }
-    item.__preview = this;
-    return function () {
-      item.__preview = null;
-    }
-  }
-
-  registerHandler () {
-    var primary =
-    if (this.isPreview )
-  }
 
 
   removeRegister () {

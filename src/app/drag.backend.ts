@@ -68,7 +68,7 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
       beginDrag: function(source: string, o) {
         this.source = this.registered[source];
         this.isDragging = !!source.length;
-        this.updateDropZones(this.source);
+        this.updateDropZones();
       },
       publishDragSource: function() {},
       hover: function(_, param: {clientOffset: DropletCoordinate}) {
@@ -166,9 +166,9 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
     };
   }
 
-  public updateDropZones(source: s) {
+  public updateDropZones() {
     this.engine.clear();
-    for(let target of this.root.getDropTargets(source)) {
+    for(let target of this.root.getDropTargets(this.source)) {
       this.engine.insert(DropletBackend.getRBushRectangleFromTarget(target));
     }
   }

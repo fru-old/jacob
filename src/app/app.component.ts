@@ -156,7 +156,7 @@ export class DropletInner implements OnChanges, OnDestroy {
     return this.preview !== this.lastPreview;
   }
 
-  ngOnChanges(changes: any) {
+  ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
     setTimeout(() => {
       if (this.hasBindingChanged()) {
         this.removeRegister();

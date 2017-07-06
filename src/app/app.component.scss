@@ -14,13 +14,9 @@
 
 .tree-element {
   margin: 0 8px 8px 0;
-  display: block;
-  @include clearfix-micro();
-}
-
-.tree-element > droplet-inner {
   padding: 8px;
   display: block;
+  @include clearfix-micro();
 }
 
 .tree-root {

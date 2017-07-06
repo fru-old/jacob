@@ -151,3 +151,4 @@ export class TreeInner implements OnChanges, OnDestroy {
 }
 
 // https://stackoverflow.com/questions/38130705/set-component-style-from-variable-in-angular-2
+// https://stackoverflow.com/questions/41109500/angular2-recursive-html-without-making-a-new-component

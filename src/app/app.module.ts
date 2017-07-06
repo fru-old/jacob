@@ -6,15 +6,15 @@ import { ElementModule } from './elements/element.module';
 import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
-import { DropletRoot, Droplet, DropletInner, DropletPreview } from './app.component';
+import { TreeRoot, TreeSource, TreePreview, TreeInner } from './app.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DropletRoot,
-    Droplet,
-    DropletInner,
-    DropletPreview
+    TreeRoot,
+    TreeSource,
+    TreePreview,
+    TreeInner
   ],
   imports: [
     BrowserModule,

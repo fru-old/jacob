@@ -58,26 +58,26 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
   private begin: DropletCoordinate;
 
   private getActions() {
-    function getMatchesAnSetBegin(current: DropletCoordinate): [t] {
+    let getMatchesAnSetBegin = (current: DropletCoordinate): [t] => {
         if (!this.begin) this.begin = current;
         var coordinate = DropletBackend.getRBushRectangleFromCoordinate(current);
         return this.engine.search(coordinate);
     }
 
     return {
-      beginDrag: function(source: string, o) {
+      beginDrag: (source: string, o) => {
         this.source = this.registered[source];
         this.isDragging = !!source.length;
         this.updateDropZones();
       },
       publishDragSource: function() {},
-      hover: function(_, param: {clientOffset: DropletCoordinate}) {
-        var matches = this.getMatchesAnSetBegin(param.clientOffset);
-        this.root.highlight(this, matches, this.begin, param.clientOffset);
+      hover: (_, param: {clientOffset: DropletCoordinate}) => {
+        var matches = getMatchesAnSetBegin(param.clientOffset);
+        this.root.highlight(this, this.source, {matches, begin: this.begin, current: param.clientOffset});
       },
       drop: function(_, param: {clientOffset: DropletCoordinate}) {
-        var matches = this.getMatchesAnSetBegin(param.clientOffset);
-        this.root.drop(this, matches, this.begin, param.clientOffset);
+        var matches = getMatchesAnSetBegin(param.clientOffset);
+        this.root.drop(this, this.source, {matches, begin: this.begin, current: param.clientOffset});
       },
       endDrag: function() {
         this.source = null;
@@ -89,8 +89,8 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
 
   private getMonitor() {
     return {
-      isDragging: function() { return this.isDragging; },
-      getSourceId: function() { return this.source && this.source.getId(); },
+      isDragging: () => { return this.isDragging; },
+      getSourceId: () => { return this.source && this.source.getId(); },
       didDrop: function() { return false; },
       canDropOnTarget: function(){ return false; },
       getItemType: function(){}

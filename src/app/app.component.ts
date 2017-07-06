@@ -32,7 +32,7 @@ class TreeTarget implements DropletTarget {
 }
 
 @Component({
-  selector: '[droplet-root]',
+  selector: '[tree-droplet-root]',
   template: `
     <ng-content></ng-content>
     <div class="highlight"
@@ -43,26 +43,24 @@ class TreeTarget implements DropletTarget {
       [style.height.px]="this.context.__highlight.height">
   `
 })
-export class TreeRoot implements OnInit, DropletRoot<TreeTarget, TreeSource> {
+export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
   @Input() context: any;
-  private backend: DropletBackend<TreeTarget, TreeSource>;
+  public readonly backend: DropletBackend<TreeTarget, TreeSource>;
 
-  constructor (@Inject(ElementRef) private reference: ElementRef) {}
+  constructor (@Inject(ElementRef) private reference: ElementRef) {
+    this.backend = new DropletBackend<TreeTarget, TreeSource>(this);
+  }
 
   public getNativeElement() {
     return this.reference.nativeElement;
   }
 
-  ngOnInit () {
-    this.backend = new DropletBackend<TreeTarget, TreeSource>(this);
-  }
-
   highlight(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
-
+    console.log(arguments);
   }
 
   drop(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
-
+    console.log(arguments);
   }
 
   getDropTargets (source: TreeSource) {
@@ -70,25 +68,21 @@ export class TreeRoot implements OnInit, DropletRoot<TreeTarget, TreeSource> {
   }
 }
 
-var droppletInnerTemplate = `
-  <droplet-inner
-    [index]="index"
-    [parent]="parent"
-    [context]="context"
-    [preview]="parent[index].__preview?.componentRef?.nativeElement"
-    [isPreview]="isPreview">
-    <ng-content></ng-content>
-  </droplet-inner>
-`;
-
 @Component({
-  selector: '[droplet]',
-  template: droppletInnerTemplate
+  selector: '[tree-droplet]',
+  template: `
+    <tree-droplet-inner [context]="context" [source]="source" [root]="root"
+      [preview]="DropletBackend.getPreview(this.context)">
+      <ng-content></ng-content>
+    </tree-droplet-inner>
+  `
 })
 export class TreeSource implements DropletSource {
-  @Input() index: number;
-  @Input() parent: any[];
+  @Input() context: any;
+  @Input() root: TreeRoot;
 
+  private readonly DropletBackend = DropletBackend;
+  private readonly source = this;
   private readonly id = 'S' + DropletBackend.getUniqueId();
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {}
@@ -104,101 +98,54 @@ export class TreeSource implements DropletSource {
 
 
 @Component({
-  selector: '[tree-preview]',
-  template: droppletInnerTemplate
+  selector: '[tree-droplet-preview]',
+  template: `<ng-content></ng-content>`
 })
-export class TreePreview implements DropletPreview {
+export class TreePreview implements OnChanges, OnDestroy {
+  @Input() context: any;
 
-  @Input() index: number;
-  @Input() parent: any[];
+  private undo: any;
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {}
 
   public getNativeElement() {
     return this.reference.nativeElement;
   }
-}
-
-@Component({
-  selector: 'droplet-inner',
-  template: `<ng-content></ng-content>`
-})
-export class DropletInner implements OnChanges, OnDestroy {
-  private static globalCounter: number = 1;
-
-  @Input() index: number;
-  @Input() parent: any[];
-  @Input() preview: any;
-  @Input() context: any;
-  @Input() isPreview: boolean;
-
-  private lastIndex: number;
-  private lastParent: any[];
-  private lastPreview:any;
-  private lastContext: any;
-  private removeListener: () => void;
-
-  public readonly id: number;
-
-  constructor (@Inject(ElementRef) private componentRef: ElementRef) {
-    this.id = DropletInner.globalCounter++;
-  }
 
   ngOnDestroy () {
-    this.removeRegister();
-  }
-
-
-
-  removeRegister () {
-    if (this.isPreview) {
-      if (!this.lastParent) return;
-      this.lastParent[this.lastIndex].__preview = null;
-    } else {
-      if (!this.lastContext) return;
-      delete this.lastContext.__handlers[this.id];
-    }
-  }
-
-  addRegister () {
-    if (this.isPreview) {
-      var item = this.parent[this.index];
-      if (item.__preview && item.__preview !== this) {
-          throw "Only one preview allowed per object."
-      }
-      item.__preview = this;
-    } else {
-      this.context.__handlers[this.id] = this;
-    }
-  }
-
-  hasBindingChanged () {
-    return this.parent !== this.lastParent
-        || this.index !== this.lastIndex
-        || this.context !== this.lastContext;
-  }
-
-  hasPreviewChanged () {
-    return this.preview !== this.lastPreview;
+    if(this.undo) this.undo();
   }
 
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
+    if(this.undo) this.undo();
+    this.undo = DropletBackend.setPreview(this.context, this);
+  }
+}
+
+@Component({
+  selector: 'tree-droplet-inner',
+  template: `<ng-content></ng-content>`
+})
+export class TreeInner implements OnChanges, OnDestroy {
+  private static globalCounter: number = 1;
+
+  @Input() preview: any;
+  @Input() context: any;
+  @Input() source: TreeSource;
+  @Input() root: TreeRoot;
+
+  ngOnDestroy () {
+    //this.removeRegister();
+  }
+
+  private undo: any;
+  ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
+
+    if(this.undo) this.undo();
+    this.undo = this.root.backend.connect(this.source, this.preview);
+
     setTimeout(() => {
-      if (this.hasBindingChanged()) {
-        this.removeRegister();
-        this.lastParent = this.parent;
-        this.lastIndex = this.index;
-        this.lastContext = this.context;
-      }
-      if (this.hasPreviewChanged()) {
-        if (this.removeListener) this.removeListener();
-        this.lastPreview = this.preview;
-      }
-      this.addRegister();
-      if (!this.removeListener) {
-        var el = this.componentRef.nativeElement;
-        this.removeListener = this.context.__backend.registerSource(el, this.id, this.preview);
-      }
+
     });
   }
 }

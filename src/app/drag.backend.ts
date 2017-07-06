@@ -22,7 +22,7 @@ export interface DropletPosition <t extends DropletTarget> {
 
 export interface DropletRoot <t extends DropletTarget, s extends DropletSource> {
   getNativeElement(): HTMLElement;
-  getDropTargets(source: s): [t];
+  getDropTargets(source: s): t[];
   highlight(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
   drop(backend: DropletBackend<t, s>, source: s, position: DropletPosition<t>)
 }

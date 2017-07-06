@@ -1,9 +1,10 @@
 import { Component, ViewChildren, QueryList, Input, ContentChildren } from '@angular/core';
-import { ElementRef, Inject, ViewEncapsulation } from '@angular/core';
+import { ElementRef, Inject, ViewEncapsulation, SimpleChange } from '@angular/core';
 import { OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { GridElement } from './elements/grid.element';
 import { InputElement } from './elements/input.element';
-import { DropletBackend } from './drag.backend';
+import { DropletBackend, DropletRoot, DropletSource, DropletTarget } from './drag.backend';
+import { DropletPreview, DropletPosition, DropletCoordinate } from './drag.backend';
 
 @Component({
   selector: 'app-root',
@@ -23,6 +24,12 @@ export class AppComponent {
   ]
 }
 
+class TreeTarget implements DropletTarget {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 @Component({
   selector: '[droplet-root]',
@@ -36,23 +43,30 @@ export class AppComponent {
       [style.height.px]="this.context.__highlight.height">
   `
 })
-export class DropletRoot implements OnInit {
+export class TreeRoot implements OnInit, DropletRoot<TreeTarget, TreeSource> {
   @Input() context: any;
+  private backend: DropletBackend<TreeTarget, TreeSource>;
 
-  constructor (@Inject(ElementRef) private componentRef: ElementRef) {}
+  constructor (@Inject(ElementRef) private reference: ElementRef) {}
 
-  ngOnInit () {
-    this.context.__isDragging = true;
-    this.context.__highlight = {};
-    this.context.__handlers = {};
-    this.context.__backend = new DropletBackend();
-    this.context.__backend.registerRoot(
-      this.componentRef.nativeElement, this.getDropTargets, this.context.__highlight);
+  public getNativeElement() {
+    return this.reference.nativeElement;
   }
 
-  // [{position, highlight: (original, current, dropzone) => position, drop: (original, current, dropzone) => void}]
-  getDropTargets (handle: any, preview: any) {
-    return [{position: {minX: 10, maxX: 20, minY: 10, maxY: 20}}];
+  ngOnInit () {
+    this.backend = new DropletBackend<TreeTarget, TreeSource>(this);
+  }
+
+  highlight(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
+
+  }
+
+  drop(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
+
+  }
+
+  getDropTargets (source: TreeSource) {
+    return [];
   }
 }
 
@@ -71,26 +85,38 @@ var droppletInnerTemplate = `
   selector: '[droplet]',
   template: droppletInnerTemplate
 })
-export class Droplet {
+export class TreeSource implements DropletSource {
   @Input() index: number;
   @Input() parent: any[];
-  @Input() context: any;
-  isPreview = false;
-}
 
-class
+  private readonly id = 'S' + DropletBackend.getUniqueId();
+
+  constructor (@Inject(ElementRef) private reference: ElementRef) {}
+
+  public getNativeElement() {
+    return this.reference.nativeElement;
+  }
+
+  public getId() {
+    return this.id;
+  }
+}
 
 
 @Component({
-  selector: '[droplet-preview]',
+  selector: '[tree-preview]',
   template: droppletInnerTemplate
 })
-export class DropletPreview {
+export class TreePreview implements DropletPreview {
+
   @Input() index: number;
   @Input() parent: any[];
-  @Input() context: any;
-  isPreview = true;
-  constructor (@Inject(ElementRef) public componentRef: ElementRef) {}
+
+  constructor (@Inject(ElementRef) private reference: ElementRef) {}
+
+  public getNativeElement() {
+    return this.reference.nativeElement;
+  }
 }
 
 @Component({

@@ -4,7 +4,7 @@ import { OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { GridElement } from './elements/grid.element';
 import { InputElement } from './elements/input.element';
 import { DropletBackend, DropletRoot, DropletSource, DropletTarget } from './drag.backend';
-import { DropletPreview, DropletPosition, DropletCoordinate } from './drag.backend';
+import { DropletPreview, DropletPosition, DropletCoordinate, DropletHelper } from './drag.backend';
 
 @Component({
   selector: 'app-root',
@@ -15,12 +15,9 @@ import { DropletPreview, DropletPosition, DropletCoordinate } from './drag.backe
 export class AppComponent {
   tree : any = [
     {title: '1'},
-    {title: '2'},
-    {title: '3', children: [
-      {title: '3.1'},
-      {title: '3.2'}
-    ]},
-    [{title: '4.1'}, {title: '4.2'}]
+    {title: '2', children: [
+      {title: '2.1'}
+    ]}
   ]
 }
 
@@ -35,17 +32,19 @@ class TreeTarget implements DropletTarget {
   selector: '[tree-droplet-root]',
   template: `
     <ng-content></ng-content>
-    <div class="highlight"
-      *ngIf="this.context.__isDragging"
-      [style.top.px]="this.context.__highlight.x"
-      [style.left.px]="this.context.__highlight.y"
-      [style.width.px]="this.context.__highlight.width"
-      [style.height.px]="this.context.__highlight.height">
+    <div class="highlight" *ngIf="preview"
+      [style.left.px]="x" [style.top.px]="y" [style.width.px]="width" [style.height.px]="height">
   `
 })
 export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
   @Input() context: any;
+
   public readonly backend: DropletBackend<TreeTarget, TreeSource>;
+  private x: number;
+  private y: number;
+  private width: number;
+  private height: number;
+  private preview: boolean = false;
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {
     this.backend = new DropletBackend<TreeTarget, TreeSource>(this);
@@ -55,35 +54,74 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
     return this.reference.nativeElement;
   }
 
+  private static getBoundingRectFromProperty(name, context) {
+    var rect = DropletBackend.getHiddenProperty(name, context).getNativeElement().getBoundingClientRect();
+    return { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+  }
+
   highlight(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
-    console.log(arguments);
+    this.preview = !!position.matches.length;
+    if(!position.matches.length) return;
+
+    this.x = position.matches[0].x;
+    this.y = position.matches[0].y;
+    this.width = position.matches[0].width;
+    this.height = position.matches[0].height;
   }
 
   drop(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
-    console.log(arguments);
+    this.preview = false;
+    //console.log(arguments);
+  }
+
+  private getRowsDepthFirst (items: any[], source: TreeSource, level: number = 0, result: any = []) {
+
+    for(let item of items) {
+      let isSource = DropletBackend.getHiddenProperty(TreeSource.SOURCE, item) === source;
+      let isPreviousSameLevel = !!result.length && (result[result.length - 1].level === level);
+      result.push({level, isSource, isPreviousSameLevel, item});
+      if (item.children && !isSource) this.getRowsDepthFirst(item.children, source, level + 1, result);
+    }
+    return result;
+  }
+
+  private getTargetAreas (row: any, prev: any, next: any) {
+    if (row.isSource) {
+      return [TreeRoot.getBoundingRectFromProperty(TreePreview.PREVIEW, row.item)];
+    } else {
+      var rect = TreeRoot.getBoundingRectFromProperty(TreeSource.SOURCE, row.item);
+      return [
+        DropletHelper.getDirection(0, rect, 4), DropletHelper.getDirection(2, rect, 4)
+      ];
+    }
   }
 
   getDropTargets (source: TreeSource) {
-    return [];
+    let rows = this.getRowsDepthFirst(this.context, source);
+    return rows
+      .map((row, i) => this.getTargetAreas(row, rows[i-1], rows[i+1]))
+      .reduce((a, b) => a.concat(b));
   }
 }
 
 @Component({
   selector: '[tree-droplet]',
   template: `
-    <tree-droplet-inner [context]="context" [source]="source" [root]="root"
-      [preview]="DropletBackend.getPreview(this.context)">
+    <tree-droplet-inner [source]="source" [root]="root" [preview]="DropletBackend.getHiddenProperty(TreePreview.PREVIEW, context)">
       <ng-content></ng-content>
     </tree-droplet-inner>
   `
 })
-export class TreeSource implements DropletSource {
+export class TreeSource implements DropletSource, OnChanges, OnDestroy {
   @Input() context: any;
   @Input() root: TreeRoot;
 
   private readonly DropletBackend = DropletBackend;
+  private readonly TreePreview = TreePreview;
   private readonly source = this;
   private readonly id = 'S' + DropletBackend.getUniqueId();
+  private undo: any;
+  public static readonly SOURCE = 'source';
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {}
 
@@ -94,6 +132,15 @@ export class TreeSource implements DropletSource {
   public getId() {
     return this.id;
   }
+
+  ngOnDestroy () {
+    if(this.undo) this.undo();
+  }
+
+  ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
+    if(this.undo) this.undo();
+    this.undo = DropletBackend.setHiddenProperty(TreeSource.SOURCE, this.context, this);
+  }
 }
 
 
@@ -101,10 +148,11 @@ export class TreeSource implements DropletSource {
   selector: '[tree-droplet-preview]',
   template: `<ng-content></ng-content>`
 })
-export class TreePreview implements OnChanges, OnDestroy {
+export class TreePreview implements DropletPreview, OnChanges, OnDestroy {
   @Input() context: any;
 
   private undo: any;
+  public static readonly PREVIEW = 'preview';
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {}
 
@@ -118,7 +166,7 @@ export class TreePreview implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
     if(this.undo) this.undo();
-    this.undo = DropletBackend.setPreview(this.context, this);
+    this.undo = DropletBackend.setHiddenProperty(TreePreview.PREVIEW, this.context, this);
   }
 }
 
@@ -127,26 +175,19 @@ export class TreePreview implements OnChanges, OnDestroy {
   template: `<ng-content></ng-content>`
 })
 export class TreeInner implements OnChanges, OnDestroy {
-  private static globalCounter: number = 1;
-
-  @Input() preview: any;
-  @Input() context: any;
+  @Input() preview: TreePreview;
   @Input() source: TreeSource;
   @Input() root: TreeRoot;
 
+  private undo: any;
+
   ngOnDestroy () {
-    //this.removeRegister();
+    if(this.undo) this.undo();
   }
 
-  private undo: any;
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
-
     if(this.undo) this.undo();
     this.undo = this.root.backend.connect(this.source, this.preview);
-
-    setTimeout(() => {
-
-    });
   }
 }
 

@@ -21,12 +21,15 @@
     "@angular/platform-browser-dynamic": "^4.0.0",
     "@angular/router": "^4.0.0",
     "bootstrap": "^4.0.0-alpha.6",
+    "classlist.js": "^1.1.20150312",
     "core-js": "^2.4.1",
     "dnd-core": "^2.3.0",
+    "intl": "^1.2.5",
     "ng-bootstrap": "^1.6.3",
     "react-dnd-html5-backend": "^2.4.1",
     "react-dnd-touch-backend": "^0.3.8",
     "rxjs": "^5.1.0",
+    "web-animations-js": "^2.2.5",
     "zone.js": "^0.8.4"
   },
   "devDependencies": {

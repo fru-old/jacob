@@ -13,7 +13,7 @@
 }
 
 .tree-element {
-  margin: 0 8px 8px 0;
+  margin-bottom: 8px;
   padding: 8px;
   display: block;
   @include clearfix-micro();
@@ -21,7 +21,8 @@
 
 .tree-root {
   @include clearfix-micro();
-  padding: 8px 0 0 8px;
+  padding: 8px 8px 0 8px;
+  max-width: 300px;
 }
 
 .highlight {

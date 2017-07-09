@@ -21,11 +21,29 @@ export class AppComponent {
   ]
 }
 
+// most of this should be in backend
+
 class TreeTarget implements DropletTarget {
   x: number;
   y: number;
   width: number;
   height: number;
+  direction: number;
+
+  prevLevel: number;
+  thisLevel: number;
+  nextLevel: number;
+
+  constructor(bounds: any) {
+    this.x = bounds.left;
+    this.y = bounds.top;
+    this.width = bounds.width;
+    this.height = bounds.height;
+  }
+
+  public highlight(position: DropletPosition<TreeTarget>) {
+    return this;
+  }
 }
 
 @Component({
@@ -56,17 +74,20 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
 
   private static getBoundingRectFromProperty(name, context) {
     var rect = DropletBackend.getHiddenProperty(name, context).getNativeElement().getBoundingClientRect();
-    return { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+    return new TreeTarget(rect);
   }
 
   highlight(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
     this.preview = !!position.matches.length;
     if(!position.matches.length) return;
+    // TODO remove guard
+    if(!position.matches[0].highlight) return;
+    var highlight = position.matches[0].highlight(position);
 
-    this.x = position.matches[0].x;
-    this.y = position.matches[0].y;
-    this.width = position.matches[0].width;
-    this.height = position.matches[0].height;
+    this.x = highlight.x;
+    this.y = highlight.y;
+    this.width = highlight.width;
+    this.height = highlight.height;
   }
 
   drop(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
@@ -90,9 +111,11 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
       return [TreeRoot.getBoundingRectFromProperty(TreePreview.PREVIEW, row.item)];
     } else {
       var rect = TreeRoot.getBoundingRectFromProperty(TreeSource.SOURCE, row.item);
-      return [
-        DropletHelper.getDirection(0, rect, 4), DropletHelper.getDirection(2, rect, 4)
-      ];
+      console.log(rect);
+      return [rect];
+      /*return [
+        DropletHelper.getPartial(0, rect, 4), DropletHelper.getPartial(2, rect, 4)
+      ];*/
     }
   }
 
@@ -131,6 +154,10 @@ export class TreeSource implements DropletSource, OnChanges, OnDestroy {
 
   public getId() {
     return this.id;
+  }
+
+  public getDragDirections(dragged: TreeSource) {
+    return {0: true, 1: true, 2: true, 3: true};
   }
 
   ngOnDestroy () {

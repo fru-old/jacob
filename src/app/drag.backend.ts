@@ -176,18 +176,64 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
 }
 
 export class DropletHelper {
-  public static getDirection(direction: number, {x, y, width, height, ...rest}, expansion: number = 0, sides: number = 0) {
+
+  public static getExpanded({x, y, width, height, ...rest}, expansion: number = 0) {
+    return {
+      x: x - expansion,
+      y: y - expansion,
+      width:  width  + 2 * expansion,
+      height: height + 2 * expansion,
+      ...rest
+    }
+  }
+
+  public static addIndentLevel({x, ...rest}, level: number, single: number) {
+    return {x: x + level * single, ...rest };
+  }
+
+  public static getHighlight(direction: number, {x, y, width, height}, expansion: number = 0) {
+
     let isHorizontal = direction === 0 || direction === 2;
     if (isHorizontal) {
+
+      if(direction === 0) y -= expansion;
+      if(direction === 2) y += expansion + height;
+
+      return { x, y, width, height: 0 };
+
+    } else {
+
+      if(direction === 1) x += expansion + width;
+      if(direction === 3) x -= expansion;
+
+      return { x, y, width: 0, height };
+    }
+  }
+
+  public static getPartial(direction: number, {x, y, width, height, ...rest},
+    expansion: number = 0, sideLeft: number = 0, sideRight: number = 0) {
+
+    let isHorizontal = direction === 0 || direction === 2;
+    if (isHorizontal) {
+
+      if (sideLeft === 0) sideLeft = -expansion;
+      if (sideRight === 0) sideRight = -expansion;
+
       height = height / 2;
+      width -= sideLeft + sideRight;
+
       if (direction === 0) y -= expansion;
       if (direction === 2) y += height;
-      if (sides === 0) sides = -expansion;
-      return {x: x + sides, y, width: width - 2 * sides, height: height + expansion, ...rest}
+
+      return {x: x + sideLeft, y, width , height: height + expansion, ...rest}
+
     } else {
-      if (direction === 1) x -= expansion;
-      if (direction === 3) x += width - sides;
-      return {x, y, width: sides + expansion, height, ...rest}
+
+      let side = direction === 1 ? sideRight : sideLeft;
+      if (direction === 1) x += width - sideRight;
+      if (direction === 3) x -= expansion;
+
+      return {x, y, width: side + expansion, height, ...rest}
     }
   }
 }

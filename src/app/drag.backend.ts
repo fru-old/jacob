@@ -175,7 +175,9 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
   }
 }
 
-export class DropletHelper {
+// Tree specific
+
+export class TreeRectangleHelper {
 
   public static getExpanded({x, y, width, height, ...rest}, expansion: number = 0) {
     return {
@@ -184,30 +186,11 @@ export class DropletHelper {
       width:  width  + 2 * expansion,
       height: height + 2 * expansion,
       ...rest
-    }
+    };
   }
 
   public static addIndentLevel({x, ...rest}, level: number, single: number) {
     return {x: x + level * single, ...rest };
-  }
-
-  public static getHighlight(direction: number, {x, y, width, height}, expansion: number = 0) {
-
-    let isHorizontal = direction === 0 || direction === 2;
-    if (isHorizontal) {
-
-      if(direction === 0) y -= expansion;
-      if(direction === 2) y += expansion + height;
-
-      return { x, y, width, height: 0 };
-
-    } else {
-
-      if(direction === 1) x += expansion + width;
-      if(direction === 3) x -= expansion;
-
-      return { x, y, width: 0, height };
-    }
   }
 
   public static getPartial(direction: number, {x, y, width, height, ...rest},
@@ -225,15 +208,120 @@ export class DropletHelper {
       if (direction === 0) y -= expansion;
       if (direction === 2) y += height;
 
-      return {x: x + sideLeft, y, width , height: height + expansion, ...rest}
-
+      return {x: x + sideLeft, y, width , height: height + expansion, ...rest};
     } else {
 
       let side = direction === 1 ? sideRight : sideLeft;
       if (direction === 1) x += width - sideRight;
       if (direction === 3) x -= expansion;
 
-      return {x, y, width: side + expansion, height, ...rest}
+      return {x, y, width: side + expansion, height, ...rest};
     }
   }
+
+  public static getFlatHighlight(direction: number, {x, y, width, height}, expansion: number = 0) {
+
+    let isHorizontal = direction === 0 || direction === 2;
+    if (isHorizontal) {
+
+      if(direction === 0) y -= expansion;
+      if(direction === 2) y += expansion + height;
+
+      return { x, y, width, height: 0 };
+
+    } else {
+
+      if(direction === 1) x += expansion + width;
+      if(direction === 3) x -= expansion;
+
+      return { x, y, width: 0, height };
+    }
+  }
+}
+
+export class TreeIterateHelper {
+  public static treeToList(items: any[], source: DropletSource, accessor: (any) => DropletSource) {
+    let results = [];
+    TreeIterateHelper.iterator(items, source, 0, results, [], null);
+    return results
+      .map((collection, i) => collection.getTargetAreas(source))
+      .reduce((a, b) => a.concat(b));
+  }
+
+  //DropletBackend.getHiddenProperty(TreeSource.SOURCE,
+
+  private static iterator(items, source, level, results, parents, previous) {
+
+    for(let item of items) {
+
+      let collection = new TreeTargetCollection();
+
+      collection.level = level;
+      collection.items = item.length ? item : [item];
+
+      collection.parents = parents;
+      if (previous) {
+        collection.prev = previous;
+        previous.next = collection;
+      }
+      results.push(collection);
+      previous = collection;
+
+      if (item.children && !isSource) {
+        var newParents = parents.concat([collection]);
+        previous = TreeIterateHelper.iterator(
+          item.children, source, level + 1, results, newParents, previous
+        );
+      }
+    }
+    return previous;
+  }
+}
+
+export class TreeTransformations {
+  // TODO transformations
+}
+
+export class TreeTargetCollection {
+  level: number;
+  items: any[];
+
+  prev: TreeTargetCollection;
+  next: TreeTargetCollection;
+  parents: TreeTargetCollection[];
+
+  public getTargetAreas(source: TreeSource): TreeTarget[]  {
+    // TODO areas
+
+    return null;
+  }
+}
+
+export class TreeTarget implements DropletTarget {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+
+  constructor(target) {
+    if (!target) return;
+
+    this.x = target.x;
+    this.y = target.y;
+    this.width = target.width;
+    this.height = target.height;
+  }
+
+  public setBounds(bounds: any) {
+    this.x = bounds.left;
+    this.y = bounds.top;
+    this.width = bounds.width;
+    this.height = bounds.height;
+  }
+
+  public highlight(position: DropletPosition<TreeTarget>) {
+    return this;
+  }
+
+  public drop(pos)
 }

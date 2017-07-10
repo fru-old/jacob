@@ -23,28 +23,6 @@ export class AppComponent {
 
 // most of this should be in backend
 
-class TreeTarget implements DropletTarget {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  direction: number;
-
-  prevLevel: number;
-  thisLevel: number;
-  nextLevel: number;
-
-  constructor(bounds: any) {
-    this.x = bounds.left;
-    this.y = bounds.top;
-    this.width = bounds.width;
-    this.height = bounds.height;
-  }
-
-  public highlight(position: DropletPosition<TreeTarget>) {
-    return this;
-  }
-}
 
 @Component({
   selector: '[tree-droplet-root]',

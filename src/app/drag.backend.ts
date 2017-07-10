@@ -12,10 +12,11 @@ export interface DropletTarget {
   y: number;
   width: number;
   height: number;
+  priority:  number;
 }
 
 export interface DropletPosition <t extends DropletTarget> {
-  matches: [t],
+  matches: t[],
   begin: DropletCoordinate,
   current: DropletCoordinate
 }
@@ -41,12 +42,12 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
   private static getRBushRectangleFromTarget(original: DropletTarget) {
     let {x, y, width, height} = original;
     return {
-      original, minX: x, minY: y, maxX: x + width, maxY: y + height
+      original, minX: x, maxX: x + width, minY: y, maxY: y + height
     }
   }
 
-  private static getRBushRectangleFromCoordinate({x, y}) {
-    return DropletBackend.getRBushRectangleFromTarget({x, y, width: 0, height: 0});
+  private static getRBushRectangleFromCoordinate({x, y}: DropletCoordinate) {
+    return {minX: x, maxX: x, minY: y, maxY: y};
   }
 
   private backend: any;
@@ -59,13 +60,26 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
   private begin: DropletCoordinate;
   private lastCoordinate: DropletCoordinate;
 
-  private getMatchesAnSetBegin(current: DropletCoordinate): [t] {
+  private static getHighestPriority(result) {
+    let highestResults = [];
+    let highestPriority = 0;
+    for (let r of result) {
+      if (r.priority > highestPriority) {
+        highestResults = [r];
+        highestPriority = r.priority;
+      } else if (r.priority === highestPriority) {
+        highestResults.push(r);
+      }
+    }
+    return highestResults;
+  }
+
+  private getMatchesAnSetBegin(current: DropletCoordinate): t[] {
       if (!current) current = this.lastCoordinate;
       this.lastCoordinate = current;
       if (!this.begin) this.begin = current;
-      var coordinate = DropletBackend.getRBushRectangleFromCoordinate(current);
-      var result = this.engine.search(coordinate);
-      return result.map(({ original }) => original);
+      let coordinate = DropletBackend.getRBushRectangleFromCoordinate(current);
+      return DropletBackend.getHighestPriority(this.engine.search(coordinate));
   }
 
   private getActions() {
@@ -175,9 +189,14 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
   }
 }
 
-// Tree specific
+// Tree geometry helper
 
 export class TreeRectangleHelper {
+
+  public static getBoundingClientRect(nativeElement) {
+    let bounds = nativeElement.getBoundingClientRect();
+    return {x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height};
+  }
 
   public static getExpanded({x, y, width, height, ...rest}, expansion: number = 0) {
     return {
@@ -239,27 +258,41 @@ export class TreeRectangleHelper {
   }
 }
 
-export class TreeIterateHelper {
-  public static treeToList(items: any[], source: DropletSource, accessor: (any) => DropletSource) {
-    let results = [];
-    TreeIterateHelper.iterator(items, source, 0, results, [], null);
-    return results
-      .map((collection, i) => collection.getTargetAreas(source))
+// tree state helper
+
+export class TreeState {
+
+  public static readonly SOURCE = 'source';
+  public static readonly PREVIEW = 'preview';
+
+  public collectionType = () => new TreeTargetCollection(this);
+  public collections: TreeTargetCollection[] = [];
+  public sourceCollection: TreeTargetCollection;
+
+  public getTargetAreas() {
+    return this.collections
+      .map((collection, i) => collection.getTargetAreas(this.source))
       .reduce((a, b) => a.concat(b));
   }
 
-  //DropletBackend.getHiddenProperty(TreeSource.SOURCE,
+  public constructor(items: any[], private source: DropletSource) {
+    this.flatten(items, source, 0, this.collections, null, null);
+    this.setNextNotChild(this.collections);
+  }
 
-  private static iterator(items, source, level, results, parents, previous) {
+  private getRegisteredSource(item) {
+    return DropletBackend.getHiddenProperty(TreeState.SOURCE, item);
+  }
 
-    for(let item of items) {
+  private flatten(items, source, level, results, parent, previous) {
+    items.forEach((item, index) => {
+      let collection = this.collectionType();
 
-      let collection = new TreeTargetCollection();
-
+      collection.parent = parent;
       collection.level = level;
-      collection.items = item.length ? item : [item];
+      collection.index = index;
+      collection.context = item;
 
-      collection.parents = parents;
       if (previous) {
         collection.prev = previous;
         previous.next = collection;
@@ -267,34 +300,75 @@ export class TreeIterateHelper {
       results.push(collection);
       previous = collection;
 
-      if (item.children && !isSource) {
-        var newParents = parents.concat([collection]);
-        previous = TreeIterateHelper.iterator(
-          item.children, source, level + 1, results, newParents, previous
-        );
+      collection.hasChildren = item.children && item.children.length > 0;
+      collection.hasSourceAt = this.indexOfSource(collection, source);
+
+      if(collection.hasSourceAt !== -1) {
+        this.sourceCollection = collection;
       }
-    }
+
+      if (collection.hasChildren && !collection.isSingleAndSource()) {
+        previous = this.flatten(item.children, source, level + 1, results, collection, previous);
+      }
+    });
     return previous;
   }
-}
 
-export class TreeTransformations {
-  // TODO transformations
+  private indexOfSource(collection, source) {
+    let sources = collection.getNormalizedContext().map((n) => this.getRegisteredSource(n));
+    return sources.indexOf(source);
+  }
+
+  private setNextNotChild(results: TreeTargetCollection[]) {
+    let unhandled = [];
+    for (let result of results) {
+
+      // Try to match unhandled to previous result
+      for (let previous of unhandled) {
+        let resultIsChildOfPrevious = result.level < previous.level;
+        if (resultIsChildOfPrevious) break;
+
+        // Result is nextNotChild (ever only once)
+        previous.nextNotChild = result;
+        unhandled.shift();
+      }
+      unhandled.unshift(result);
+    }
+  }
 }
 
 export class TreeTargetCollection {
   level: number;
-  items: any[];
+  index: number;
+  context: any;
+
+  hasChildren: boolean;
+  hasSourceAt: number = -1;
+
+  constructor(public state: TreeState) {}
+
+  isSingleAndSource () {
+    return this.context.length === 1 && this.hasSourceAt > -1;
+  }
+
+  getNormalizedContext() {
+    return this.context.length >= 0 ? this.context : [this.context]
+  }
 
   prev: TreeTargetCollection;
   next: TreeTargetCollection;
-  parents: TreeTargetCollection[];
+  nextNotChild: TreeTargetCollection;
+  parent: TreeTargetCollection;
 
-  public getTargetAreas(source: TreeSource): TreeTarget[]  {
-    // TODO areas
+  public getTargetAreas(source: DropletSource): TreeTarget[]  {
 
     return null;
   }
+}
+
+export class TreeTransformationHelper {
+  // detach
+  // insert(direction, relativeCollection, relativeIndex)
 }
 
 export class TreeTarget implements DropletTarget {
@@ -302,6 +376,11 @@ export class TreeTarget implements DropletTarget {
   y: number;
   width: number;
   height: number;
+  priority: number = 0;
+
+  direction: number = null;
+  index: number;
+  collection: TreeTargetCollection;
 
   constructor(target) {
     if (!target) return;
@@ -310,18 +389,13 @@ export class TreeTarget implements DropletTarget {
     this.y = target.y;
     this.width = target.width;
     this.height = target.height;
-  }
-
-  public setBounds(bounds: any) {
-    this.x = bounds.left;
-    this.y = bounds.top;
-    this.width = bounds.width;
-    this.height = bounds.height;
+    this.priority = target.priority || 0;
   }
 
   public highlight(position: DropletPosition<TreeTarget>) {
-    return this;
   }
 
-  public drop(pos)
+  public drop(position: DropletPosition<TreeTarget>) {
+    if (this.direction === null) return;
+  }
 }

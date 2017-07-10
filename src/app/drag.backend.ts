@@ -277,7 +277,6 @@ export class TreeState {
 
   public constructor(items: any[], private source: DropletSource) {
     this.flatten(items, source, 0, this.collections, null, null);
-    this.setNextNotChild(this.collections);
   }
 
   private getRegisteredSource(item) {
@@ -301,7 +300,7 @@ export class TreeState {
       previous = collection;
 
       collection.hasChildren = item.children && item.children.length > 0;
-      collection.hasSourceAt = this.indexOfSource(collection, source);
+      collection.hasSourceAt = this.getIndexOfSource(collection, source);
 
       if(collection.hasSourceAt !== -1) {
         this.sourceCollection = collection;
@@ -314,26 +313,9 @@ export class TreeState {
     return previous;
   }
 
-  private indexOfSource(collection, source) {
+  private getIndexOfSource(collection, source) {
     let sources = collection.getNormalizedContext().map((n) => this.getRegisteredSource(n));
     return sources.indexOf(source);
-  }
-
-  private setNextNotChild(results: TreeTargetCollection[]) {
-    let unhandled = [];
-    for (let result of results) {
-
-      // Try to match unhandled to previous result
-      for (let previous of unhandled) {
-        let resultIsChildOfPrevious = result.level < previous.level;
-        if (resultIsChildOfPrevious) break;
-
-        // Result is nextNotChild (ever only once)
-        previous.nextNotChild = result;
-        unhandled.shift();
-      }
-      unhandled.unshift(result);
-    }
   }
 }
 
@@ -357,7 +339,6 @@ export class TreeTargetCollection {
 
   prev: TreeTargetCollection;
   next: TreeTargetCollection;
-  nextNotChild: TreeTargetCollection;
   parent: TreeTargetCollection;
 
   public getTargetAreas(source: DropletSource): TreeTarget[]  {

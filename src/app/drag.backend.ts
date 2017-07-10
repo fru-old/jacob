@@ -322,6 +322,8 @@ export class TreeState {
 export class TreeTargetCollection {
   level: number;
   index: number;
+
+  // can not be the empty array
   context: any;
 
   hasChildren: boolean;
@@ -342,8 +344,24 @@ export class TreeTargetCollection {
   parent: TreeTargetCollection;
 
   public getTargetAreas(source: DropletSource): TreeTarget[]  {
+    let areas = [];
+    let normalized = this.getNormalizedContext();
+    let first = normalized[0];
 
-    return null;
+    if (this.isSingleAndSource()) {
+      
+
+    } else {
+      // Before first item
+
+      // Areas in items
+      for (let i = 0; i < normalized.length; i++) {
+        let item = normalized[i];
+
+      }
+    }
+
+    return areas;
   }
 }
 

@@ -193,12 +193,17 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
 
 export class TreeRectangleHelper {
 
-  public static getBoundingClientRect(nativeElement) {
+  public expansion: number = 0;
+  public levelWidth: number = 0;
+
+  public getBoundingClientRect(nativeElement) {
     let bounds = nativeElement.getBoundingClientRect();
     return {x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height};
   }
 
-  public static getExpanded({x, y, width, height, ...rest}, expansion: number = 0) {
+  public getExpanded({x, y, width, height, ...rest}, useExpansion: boolean) {
+    let expansion = useExpansion ? this.expansion : 0;
+
     return {
       x: x - expansion,
       y: y - expansion,
@@ -208,12 +213,14 @@ export class TreeRectangleHelper {
     };
   }
 
-  public static addIndentLevel({x, ...rest}, level: number, single: number) {
-    return {x: x + level * single, ...rest };
+  public getSpaceBeforeFirst({x, width, ...rest}, level: number) {
+    return {x: x - level * this.levelWidth, width: level * this.levelWidth, ...rest };
   }
 
-  public static getPartial(direction: number, {x, y, width, height, ...rest},
-    expansion: number = 0, sideLeft: number = 0, sideRight: number = 0) {
+  public getPartial(direction: number, {x, y, width, height, ...rest},
+    useExpansion: boolean, sideLeft: number = 0, sideRight: number = 0) {
+
+    let expansion = useExpansion ? this.expansion : 0;
 
     let isHorizontal = direction === 0 || direction === 2;
     if (isHorizontal) {
@@ -238,7 +245,9 @@ export class TreeRectangleHelper {
     }
   }
 
-  public static getFlatHighlight(direction: number, {x, y, width, height}, expansion: number = 0) {
+  public getFlatHighlight(direction: number, {x, y, width, height}, useExpansion: boolean) {
+
+    let expansion = useExpansion ? this.expansion : 0;
 
     let isHorizontal = direction === 0 || direction === 2;
     if (isHorizontal) {
@@ -265,7 +274,7 @@ export class TreeState {
   public static readonly SOURCE = 'source';
   public static readonly PREVIEW = 'preview';
 
-  public readonly levelDepth: number;
+  public readonly rectangleHelper = new TreeRectangleHelper();
   public collectionType = () => new TreeTargetCollection(this);
   public collections: TreeTargetCollection[] = [];
   public sourceCollection: TreeTargetCollection;
@@ -276,13 +285,18 @@ export class TreeState {
       .reduce((a, b) => a.concat(b));
   }
 
-  public constructor(levelDepth: number, items: any[], private source: DropletSource) {
-    this.levelDepth = levelDepth;
+  public constructor(levelWidth: number, distanceBetween: number, items: any[], private source: DropletSource) {
+    this.rectangleHelper.levelWidth = levelWidth;
+    this.rectangleHelper.expansion = distanceBetween / 2;
     this.flatten(items, source, 0, this.collections, null, null);
   }
 
-  private getRegisteredSource(item) {
+  public static getRegisteredSource(item) {
     return DropletBackend.getHiddenProperty(TreeState.SOURCE, item);
+  }
+
+  public static getRegisteredPreview(item) {
+    return DropletBackend.getHiddenProperty(TreeState.PREVIEW, item);
   }
 
   private flatten(items, source, level, results, parent, previous) {
@@ -316,7 +330,7 @@ export class TreeState {
   }
 
   private getIndexOfSource(collection, source) {
-    let sources = collection.getNormalizedContext().map((n) => this.getRegisteredSource(n));
+    let sources = collection.getNormalizedContext().map((n) => TreeState.getRegisteredSource(n));
     return sources.indexOf(source);
   }
 }
@@ -351,14 +365,17 @@ export class TreeTargetCollection {
     let first = normalized[0];
 
     if (this.isSingleAndSource()) {
-
-
+      let preview = TreeState.getRegisteredSource(first);
+      let beforeFirst = this.state.rectangleHelper.getSpaceBeforeFirst(first, preview.level);
+      areas.push(new TreeTarget(beforeFirst));
+      areas.push(new TreeTarget(preview));
     } else {
       // Before first item
 
       // Areas in items
       for (let i = 0; i < normalized.length; i++) {
         let item = normalized[i];
+
 
       }
     }

@@ -22,9 +22,6 @@ export class AppComponent {
   ]
 }
 
-// most of this should be in backend
-
-
 @Component({
   selector: '[tree-droplet-root]',
   template: `
@@ -36,7 +33,7 @@ export class AppComponent {
 export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
   @Input() context: any;
 
-  public readonly backend: DropletBackend<TreeTarget, TreeSource>;
+  readonly backend: DropletBackend<TreeTarget, TreeSource>;
   private x: number;
   private y: number;
   private width: number;
@@ -48,18 +45,13 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
     this.backend = new DropletBackend<TreeTarget, TreeSource>(this);
   }
 
-  public getNativeElement() {
+  getNativeElement() {
     return this.reference.nativeElement;
-  }
-
-  private static getBoundingRectFromProperty(name, context) {
-    var rect = DropletBackend.getHiddenProperty(name, context).getNativeElement().getBoundingClientRect();
-    return new TreeTarget(rect);
   }
 
   highlight(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
     this.preview = !!position.matches.length;
-    if(position.matches.length/* && position.matches[0].highlight*/) {
+    if(position.matches.length) {
       var highlight = position.matches[0].highlight(position);
       this.x = highlight.x;
       this.y = highlight.y;
@@ -70,11 +62,10 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
 
   drop(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
     this.preview = false;
-    //console.log(arguments);
+    if(position.matches.length) {
+      position.matches[0].drop(position);
+    }
   }
-
-
-
 
   getDropTargets (source: TreeSource) {
     this.state = new TreeState(10, 2, this.context, source);
@@ -111,9 +102,10 @@ export class TreeSource implements DropletSource, OnChanges, OnDestroy {
     return this.id;
   }
 
+  /*
   public getDragDirections(dragged: TreeSource) {
     return {0: true, 1: true, 2: true, 3: true};
-  }
+  }*/
 
   ngOnDestroy () {
     if(this.undo) this.undo();

@@ -40,9 +40,9 @@ export interface DropletPreview {
 export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
 
   private static getRBushRectangleFromTarget(original: DropletTarget) {
-    let {x, y, width, height} = original;
+    let {x, y, width, height, priority} = original;
     return {
-      original, minX: x, maxX: x + width, minY: y, maxY: y + height
+      original, minX: x, maxX: x + width, minY: y, maxY: y + height, priority
     }
   }
 
@@ -79,7 +79,8 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
       this.lastCoordinate = current;
       if (!this.begin) this.begin = current;
       let coordinate = DropletBackend.getRBushRectangleFromCoordinate(current);
-      return DropletBackend.getHighestPriority(this.engine.search(coordinate));
+      let results = DropletBackend.getHighestPriority(this.engine.search(coordinate));
+      return results.map(x => x.original);
   }
 
   private getActions() {
@@ -196,8 +197,8 @@ export class TreeRectangleHelper {
   public expansion: number = 0;
   public levelWidth: number = 0;
 
-  public getBoundingClientRect(nativeElement) {
-    let bounds = nativeElement.getBoundingClientRect();
+  public getBoundingClientRect(element) {
+    let bounds = element.getNativeElement().getBoundingClientRect();
     return {x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height};
   }
 
@@ -348,7 +349,7 @@ export class TreeTargetCollection {
   constructor(public state: TreeState) {}
 
   isSingleAndSource () {
-    return this.context.length === 1 && this.hasSourceAt > -1;
+    return this.getNormalizedContext().length === 1 && this.hasSourceAt > -1;
   }
 
   getNormalizedContext() {
@@ -365,10 +366,11 @@ export class TreeTargetCollection {
     let first = normalized[0];
 
     if (this.isSingleAndSource()) {
-      let preview = TreeState.getRegisteredSource(first);
-      let beforeFirst = this.state.rectangleHelper.getSpaceBeforeFirst(first, preview.level);
-      areas.push(new TreeTarget(beforeFirst));
-      areas.push(new TreeTarget(preview));
+      let helper = this.state.rectangleHelper;
+      let previewObject = TreeState.getRegisteredPreview(first);
+      let previewRect = helper.getBoundingClientRect(previewObject);
+      areas.push(new TreeTarget(helper.getSpaceBeforeFirst(previewRect, this.level)));
+      areas.push(new TreeTarget(previewRect));
     } else {
       // Before first item
 
@@ -411,6 +413,7 @@ export class TreeTarget implements DropletTarget {
   }
 
   public highlight(position: DropletPosition<TreeTarget>) {
+    //console.log(this.x);
     return this;
   }
 

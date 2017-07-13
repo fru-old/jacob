@@ -42,6 +42,7 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
   private width: number;
   private height: number;
   private preview: boolean = false;
+  private state: TreeState;
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {
     this.backend = new DropletBackend<TreeTarget, TreeSource>(this);
@@ -58,14 +59,13 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
 
   highlight(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
     this.preview = !!position.matches.length;
-    if(!position.matches.length) return;
-    // TODO remove guard
-    if(!position.matches[0].highlight) return;
-    var highlight = position.matches[0].highlight(position);
-    this.x = highlight.x;
-    this.y = highlight.y;
-    this.width = highlight.width;
-    this.height = highlight.height;
+    if(position.matches.length/* && position.matches[0].highlight*/) {
+      var highlight = position.matches[0].highlight(position);
+      this.x = highlight.x;
+      this.y = highlight.y;
+      this.width = highlight.width;
+      this.height = highlight.height;
+    }
   }
 
   drop(backend: DropletBackend<TreeTarget, TreeSource>, source: TreeSource, position: DropletPosition<TreeTarget>) {
@@ -73,35 +73,13 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
     //console.log(arguments);
   }
 
-  private getRowsDepthFirst (items: any[], source: TreeSource, level: number = 0, result: any = []) {
 
-    for(let item of items) {
-      let isSource = DropletBackend.getHiddenProperty(TreeSource.SOURCE, item) === source;
-      let isPreviousSameLevel = !!result.length && (result[result.length - 1].level === level);
-      result.push({level, isSource, isPreviousSameLevel, item});
-      if (item.children && !isSource) this.getRowsDepthFirst(item.children, source, level + 1, result);
-    }
-    return result;
-  }
 
-  private getTargetAreas (row: any, prev: any, next: any) {
-    if (row.isSource) {
-      return [TreeRoot.getBoundingRectFromProperty(TreePreview.PREVIEW, row.item)];
-    } else {
-      var rect = TreeRoot.getBoundingRectFromProperty(TreeSource.SOURCE, row.item);
-      console.log(rect);
-      return [rect];
-      /*return [
-        DropletHelper.getPartial(0, rect, 4), DropletHelper.getPartial(2, rect, 4)
-      ];*/
-    }
-  }
 
   getDropTargets (source: TreeSource) {
-    let rows = this.getRowsDepthFirst(this.context, source);
-    return rows
-      .map((row, i) => this.getTargetAreas(row, rows[i-1], rows[i+1]))
-      .reduce((a, b) => a.concat(b));
+    this.state = new TreeState(10, 2, this.context, source);
+    console.log(this.state.getTargetAreas());
+    return this.state.getTargetAreas();
   }
 }
 
@@ -122,7 +100,6 @@ export class TreeSource implements DropletSource, OnChanges, OnDestroy {
   private readonly source = this;
   private readonly id = 'S' + DropletBackend.getUniqueId();
   private undo: any;
-  public static readonly SOURCE = 'source';
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {}
 
@@ -144,7 +121,7 @@ export class TreeSource implements DropletSource, OnChanges, OnDestroy {
 
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
     if(this.undo) this.undo();
-    this.undo = DropletBackend.setHiddenProperty(TreeSource.SOURCE, this.context, this);
+    this.undo = DropletBackend.setHiddenProperty(TreeState.SOURCE, this.context, this);
   }
 }
 
@@ -157,7 +134,6 @@ export class TreePreview implements DropletPreview, OnChanges, OnDestroy {
   @Input() context: any;
 
   private undo: any;
-  public static readonly PREVIEW = 'preview';
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {}
 
@@ -171,7 +147,7 @@ export class TreePreview implements DropletPreview, OnChanges, OnDestroy {
 
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
     if(this.undo) this.undo();
-    this.undo = DropletBackend.setHiddenProperty(TreePreview.PREVIEW, this.context, this);
+    this.undo = DropletBackend.setHiddenProperty(TreeState.PREVIEW, this.context, this);
   }
 }
 

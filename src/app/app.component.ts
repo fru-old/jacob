@@ -3,8 +3,9 @@ import { ElementRef, Inject, ViewEncapsulation, SimpleChange } from '@angular/co
 import { OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { GridElement } from './elements/grid.element';
 import { InputElement } from './elements/input.element';
-import { DropletBackend, DropletRoot, DropletSource, DropletTarget } from './drag.backend';
-import { DropletPreview, DropletPosition, DropletCoordinate, DropletHelper } from './drag.backend';
+import { DropletBackend, DropletRoot, DropletSource } from './drag.backend';
+import { DropletPreview, DropletPosition, DropletCoordinate } from './drag.backend';
+import { TreeRectangleHelper, TreeState, TreeTarget, TreeTargetCollection } from './drag.backend';
 
 @Component({
   selector: 'app-root',
@@ -61,7 +62,6 @@ export class TreeRoot implements DropletRoot<TreeTarget, TreeSource> {
     // TODO remove guard
     if(!position.matches[0].highlight) return;
     var highlight = position.matches[0].highlight(position);
-
     this.x = highlight.x;
     this.y = highlight.y;
     this.width = highlight.width;

@@ -265,6 +265,7 @@ export class TreeState {
   public static readonly SOURCE = 'source';
   public static readonly PREVIEW = 'preview';
 
+  public readonly levelDepth: number;
   public collectionType = () => new TreeTargetCollection(this);
   public collections: TreeTargetCollection[] = [];
   public sourceCollection: TreeTargetCollection;
@@ -275,7 +276,8 @@ export class TreeState {
       .reduce((a, b) => a.concat(b));
   }
 
-  public constructor(items: any[], private source: DropletSource) {
+  public constructor(levelDepth: number, items: any[], private source: DropletSource) {
+    this.levelDepth = levelDepth;
     this.flatten(items, source, 0, this.collections, null, null);
   }
 
@@ -349,7 +351,7 @@ export class TreeTargetCollection {
     let first = normalized[0];
 
     if (this.isSingleAndSource()) {
-      
+
 
     } else {
       // Before first item
@@ -392,6 +394,7 @@ export class TreeTarget implements DropletTarget {
   }
 
   public highlight(position: DropletPosition<TreeTarget>) {
+    return this;
   }
 
   public drop(position: DropletPosition<TreeTarget>) {

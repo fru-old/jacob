@@ -417,13 +417,27 @@ export class TreeTarget implements DropletTarget {
   direction: number = null;
   index: number;
 
-  getHoverLevelDifference(position: DropletPosition<TreeTarget>) {
-    if (this.direction === Direction.Left || this.direction === Direction.Right) return 0;
-    if (!this.collection.isSingle()) return 0;
-    let minDif = 0;
-    let maxDif = 0;
+  getHoverLevel(position: DropletPosition<TreeTarget>) {
+    let level = this.collection.level;
+
+    if (this.direction === Direction.Left || this.direction === Direction.Right) {
+      throw 'not applicable';
+    }
+
+    let nextLevel = this.collection.next && this.collection.next.level || 0;
+    let prevLevel = this.collection.prev && this.collection.prev.level || 0;
+
+    let sourceLevel = this.collection.state.sourceCollection.level;
+
+    if (this.direction === Direction.Up) nextLevel = level;
+    if (this.direction === Direction.Down) prevLevel = level;
+
+    let min = 0;
+    let max = prevLevel - nextLevel + 1;
+    if (!this.collection.prev) min = 0;
+
     return this.collection.state.rectangleHelper.getHoverLevelDifference(
-      maxDif, minDif, position.begin, position.current);
+      max - sourceLevel, min - sourceLevel, position.begin, position.current) + sourceLevel;
   }
 
   constructor(target, private collection: TreeTargetCollection) {

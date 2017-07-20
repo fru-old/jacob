@@ -190,12 +190,24 @@ export class DropletBackend <t extends DropletTarget, s extends DropletSource> {
   }
 }
 
+enum Direction {
+    Up = 0,
+    Right = 1,
+    Down = 2,
+    Left = 3
+}
+
 // Tree geometry helper
 
 export class TreeRectangleHelper {
 
   public expansion: number = 0;
   public levelWidth: number = 0;
+
+  public getHoverLevelDifference(maxDif, minDif, begin: DropletCoordinate, current: DropletCoordinate) {
+    var levelDif = Math.floor((current.x - begin.x) / this.levelWidth);
+    return Math.max(Math.min(levelDif, maxDif), minDif);
+  }
 
   public getBoundingClientRect(element) {
     let bounds = element.getNativeElement().getBoundingClientRect();
@@ -223,7 +235,7 @@ export class TreeRectangleHelper {
 
     let expansion = useExpansion ? this.expansion : 0;
 
-    let isHorizontal = direction === 0 || direction === 2;
+    let isHorizontal = direction === Direction.Up || direction === 2;
     if (isHorizontal) {
 
       if (sideLeft === 0) sideLeft = -expansion;
@@ -232,7 +244,7 @@ export class TreeRectangleHelper {
       height = height / 2;
       width -= sideLeft + sideRight;
 
-      if (direction === 0) y -= expansion;
+      if (direction === Direction.Up) y -= expansion;
       if (direction === 2) y += height;
 
       return {x: x + sideLeft, y, width , height: height + expansion, ...rest};
@@ -250,11 +262,11 @@ export class TreeRectangleHelper {
 
     let expansion = useExpansion ? this.expansion : 0;
 
-    let isHorizontal = direction === 0 || direction === 2;
+    let isHorizontal = direction === Direction.Up || direction === Direction.Down;
     if (isHorizontal) {
 
-      if(direction === 0) y -= expansion;
-      if(direction === 2) y += expansion + height;
+      if(direction === Direction.Up) y -= expansion;
+      if(direction === Direction.Down) y += expansion + height;
 
       return { x, y, width, height: 0 };
 
@@ -323,7 +335,7 @@ export class TreeState {
         this.sourceCollection = collection;
       }
 
-      if (collection.hasChildren && !collection.isSingleAndSource()) {
+      if (collection.hasChildren && !(collection.isSingle() && collection.hasSource())) {
         previous = this.flatten(item.children, source, level + 1, results, collection, previous);
       }
     });
@@ -348,8 +360,12 @@ export class TreeTargetCollection {
 
   constructor(public state: TreeState) {}
 
-  isSingleAndSource () {
-    return this.getNormalizedContext().length === 1 && this.hasSourceAt > -1;
+  isSingle () {
+    return this.getNormalizedContext().length === 1;
+  }
+
+  hasSource () {
+    return this.hasSourceAt > -1;
   }
 
   getNormalizedContext() {
@@ -365,12 +381,12 @@ export class TreeTargetCollection {
     let normalized = this.getNormalizedContext();
     let first = normalized[0];
 
-    if (this.isSingleAndSource()) {
+    if (this.isSingle() && this.hasSource()) {
       let helper = this.state.rectangleHelper;
       let previewObject = TreeState.getRegisteredPreview(first);
       let previewRect = helper.getBoundingClientRect(previewObject);
-      areas.push(new TreeTarget(helper.getSpaceBeforeFirst(previewRect, this.level)));
-      areas.push(new TreeTarget(previewRect));
+      areas.push(new TreeTarget(helper.getSpaceBeforeFirst(previewRect, this.level), this));
+      areas.push(new TreeTarget(previewRect, this));
     } else {
       // Before first item
 
@@ -400,9 +416,17 @@ export class TreeTarget implements DropletTarget {
 
   direction: number = null;
   index: number;
-  collection: TreeTargetCollection;
 
-  constructor(target) {
+  getHoverLevelDifference(position: DropletPosition<TreeTarget>) {
+    if (this.direction === Direction.Left || this.direction === Direction.Right) return 0;
+    if (!this.collection.isSingle()) return 0;
+    let minDif = 0;
+    let maxDif = 0;
+    return this.collection.state.rectangleHelper.getHoverLevelDifference(
+      maxDif, minDif, position.begin, position.current);
+  }
+
+  constructor(target, private collection: TreeTargetCollection) {
     if (!target) return;
 
     this.x = target.x;

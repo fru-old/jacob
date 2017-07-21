@@ -14,7 +14,7 @@ export class TreeTargetActionBetween implements TargetActions {
     private before: TreeRowContainer,
     private after:  TreeRowContainer
   ) { /*empty*/ }
-  
+
   hover(start: Coordinate, now: Coordinate) {
     if (this.source) return this.generator.hoverOnSource(this.source, now.x - start.x);
     if (this.before) return this.generator.hoverAfter(this.before, now.x - start.x);
@@ -30,10 +30,13 @@ export class TreeTargetActionBetween implements TargetActions {
 
 export class TreeTargetActionAtIndex implements TargetActions {
 
-  constructor(private generator: TreeGenerator, private row: TreeRowContainer, private index: number) {}
+  constructor(private generator: TreeGenerator, private row: TreeRowContainer, private index: number) { /*empty*/ }
 
-  private source = this.generator.flattened.getSourceAt(this.row.nodesOriginal, this.index)
-                || this.generator.flattened.getSourceAt(this.row.nodesOriginal, this.index - 1);
+  getSourceInRowAt(index: number) {
+    let possible = this.row.nodesOriginal[index];
+    return this.generator.flattened.transformer.isSource(possible) ? possible : null;
+  }
+  private source = this.getSourceInRowAt(this.index) || this.getSourceInRowAt(this.index - 1);
 
   hover(start: Coordinate, now: Coordinate) {
     if (this.source) return this.generator.hoverOnSource(this.source, 0);

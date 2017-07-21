@@ -1,5 +1,5 @@
-// Flattening + Finding Sources + Adding child lists
-import { TreeRowContainer, TreeRowListContainer, TreeTransformation } from './container'
+import { TreeRowContainer, TreeRowListContainer } from './container'
+import { TreeTransformation } from './transformer'
 
 export class FlattenedTree {
 
@@ -32,10 +32,6 @@ export class FlattenedTree {
 
   isSingleAndSource(rowItems: any[]) {
     return rowItems.length === 1 && this.transformer.isSource(rowItems[0])
-  }
-
-  getSourceAt(rowItems: any[], index: number) {
-    return this.transformer.isSource(rowItems[index]) ? rowItems[index] : null;
   }
 
   getOrCreateChildList(item: any) {

@@ -18,7 +18,7 @@ export abstract class TreeGenerator extends TargetGenerator {
   //getLevelWidth(): number;
   //Inline nodes don't have children but multiple can be in same row
   //isInline(node) { return false; }
-
+  //hoverEmpty
 
   // generate: flatten, build targets, map+concat
 

@@ -1,12 +1,14 @@
 import { BoundingBox, Coordinate, Target, TargetActions } from '../core/generator.interfaces'
 import { TargetGenerator } from '../core/generator.abstract'
+import { TreeRowContainer } from './container'
+import { FlattenedTree } from './flatten'
 
 export abstract class TreeGenerator extends TargetGenerator {
   public static readonly SOURCE = 'source';
   public static readonly PREVIEW = 'preview';
   public static readonly IS_SOURCE = 'isSource'
 
-  constructor() {super();}
+  constructor(public flattened: FlattenedTree) {super();}
 
   // TODO implement target generator
 
@@ -27,9 +29,9 @@ export abstract class TreeGenerator extends TargetGenerator {
 
 
   abstract setLevel(source, offset);
-  abstract dropAfterAndDetach(relative: TreeSourceRow, offset: number);
-  abstract dropBeforeAllAndDetach(relative: TreeSourceRow);
-  abstract dropAtIndexAndDetach(relative: TreeSourceRow, index: number);
+  abstract dropAfterAndDetach(relative: TreeRowContainer, offset: number);
+  abstract dropBeforeAllAndDetach(relative: TreeRowContainer);
+  abstract dropAtIndexAndDetach(relative: TreeRowContainer, index: number);
 
 
 

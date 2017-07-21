@@ -4,9 +4,9 @@ export abstract class TargetGenerator {
   abstract generate(data): Target[];
   abstract isSource(item): boolean;
 
-  private getOrInitDropletProperty(context: any) {
-    if (!context.__droplet) context.__droplet = {};
-    return context.__droplet;
+  private getOrInitDropletProperty(context: any, init = false) {
+    if (!context.__droplet && init) context.__droplet = {};
+    return context.__droplet || {};
   }
 
   getHidden(name: string, context: any): any {
@@ -14,15 +14,18 @@ export abstract class TargetGenerator {
   }
 
   setHidden(name: string, context: any, data: any) {
-    var droplet = this.getOrInitDropletProperty(context);
+    var droplet = this.getOrInitDropletProperty(context, true);
     if (droplet[name]) throw 'Only one ' + name + ' can be attached to the same context.';
     droplet[name] = data;
     return () => { delete droplet[name]; };
   }
 
   private getHighestPriority(matches: Target[]) {
-    // TODO
-    return matches[0];
+    let highest = null;
+    for (let current of matches || []) {
+      if(!highest || highest.priority < current.priority) highest = current;
+    }
+    return highest;
   }
 
   hover(matches: Target[], start: Coordinate, now: Coordinate): BoundingBox {

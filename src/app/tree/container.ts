@@ -46,13 +46,17 @@ export class TreeTransformation {
 
   isSource(item: any) { return this.normalized.indexOf(item) >= 0; }
 
+  private insertAtIndex(target: any[], index: number, inserted: any[]) {
+    Array.prototype.splice.apply(target, [index, 0].concat(inserted));
+  }
+
   insertIntoRow(rowList: any[], index: number, indexInRow: number) {
     this.transformationGuard();
-    rowList[index].splice(indexInRow, 0, ...this.normalized);
+    this.insertAtIndex(rowList[index], indexInRow, this.normalized);
   }
 
   insertRows(rowList: any[], index: number) {
     this.transformationGuard();
-    rowList.splice(index, 0, ...this.normalized.map(x => [x]));
+    this.insertAtIndex(rowList, index, this.normalized.map(x => [x]));
   }
 }

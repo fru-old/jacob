@@ -4,11 +4,17 @@ import { TreeRowContainer } from './container'
 
 export class TreeTargetActionBetween implements TargetActions {
 
-  constructor(private generator: TreeGenerator, private before: TreeRowContainer, private after: TreeRowContainer) {}
+  private getSingleAndSource(row: TreeRowContainer): TreeRowContainer {
+    return row && this.generator.flattened.isSingleAndSource(row.nodesOriginal) && row;
+  }
+  private source = this.getSingleAndSource(this.before) || this.getSingleAndSource(this.after);
 
-  private source = (this.generator.flattened.isSingleAndSource(this.before.nodesOriginal) && this.before)
-                || (this.generator.flattened.isSingleAndSource(this.after.nodesOriginal)  && this.after);
-
+  constructor(
+    private generator: TreeGenerator,
+    private before: TreeRowContainer,
+    private after:  TreeRowContainer
+  ) { /*empty*/ }
+  
   hover(start: Coordinate, now: Coordinate) {
     if (this.source) return this.generator.hoverOnSource(this.source, now.x - start.x);
     if (this.before) return this.generator.hoverAfter(this.before, now.x - start.x);

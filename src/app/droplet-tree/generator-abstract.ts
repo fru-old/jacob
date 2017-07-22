@@ -1,11 +1,17 @@
-import { BoundingBox, Coordinate, Target } from './generator.interfaces'
+import { BoundingBox, Coordinate } from './_interfaces/geometry'
+import { Target } from './_interfaces/target'
+import { FlatTreeContainer } from './flat-tree-container'
+import { FlatTreeTransformer } from './flat-tree-transformer'
 
 export abstract class Generator {
+
+  constructor (public tree: FlatTreeContainer) { /*empty*/ }
+  public transformer = new FlatTreeTransformer(this);
 
   abstract generate(data): Target[];
   abstract isInline(item): boolean;
   abstract isSelected(item): boolean;
-  abstract getChildren(item, create: boolean = false): any[][];
+  abstract getChildren(item, create?: boolean): any[][];
 
   private getHighestPriority(matches: Target[]) {
     let highest = null;

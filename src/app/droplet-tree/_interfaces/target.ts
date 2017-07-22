@@ -1,14 +1,4 @@
-export interface BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-export interface Coordinate {
-  x: number;
-  y: number;
-}
+import { BoundingBox, Coordinate } from './geometry'
 
 export interface Target {
   readonly priority: number;

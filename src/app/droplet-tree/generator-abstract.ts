@@ -1,7 +1,7 @@
 import { BoundingBox, Coordinate, Target } from './generator.interfaces'
 
-export abstract class AbstractGenerator {
-  
+export abstract class Generator {
+
   abstract generate(data): Target[];
   abstract isSource(item): boolean;
 

@@ -21,7 +21,7 @@ export class TargetBuilder {
   }
 
   private buildTarget(node: object, direction: Direction, before: boolean, actions: TargetActions ) {
-    let area = this.generator.getTargetArea(node, direction, before);
+    let area = this.generator.getTargetBox(node, direction, before);
     let isLeftOrRight = direction === Direction.LEFT || direction === Direction.RIGHT;
     return { area, actions, priority: isLeftOrRight ? 2 : 1 };
   }

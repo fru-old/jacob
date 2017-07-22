@@ -10,6 +10,12 @@ export abstract class TreeGenerator extends TargetGenerator {
 
   constructor(public flattened: FlattenedTree) {super();}
 
+  // isSource
+  // transform
+  // hover
+
+
+
   // TODO implement target generator
 
   // Are these needed?
@@ -19,6 +25,8 @@ export abstract class TreeGenerator extends TargetGenerator {
   //Inline nodes don't have children but multiple can be in same row
   //isInline(node) { return false; }
   //hoverEmpty
+
+  // levelCa
 
   // generate: flatten, build targets, map+concat
 

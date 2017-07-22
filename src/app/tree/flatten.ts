@@ -15,7 +15,10 @@ export class FlattenedTree {
     let listContainer = new TreeRowListContainer(listItems);
     this.lists.push(listContainer);
     listContainer.rowsContainer = listItems.map(rowItems => {
-      let rowContainer = new TreeRowContainer(level, previousOnLevel.slice(), listContainer, rowItems, this.transformer);
+
+      let rowContainer = new TreeRowContainer(
+        level, previousOnLevel.slice(), listContainer, rowItems, this.transformer);
+
       previousOnLevel[level] = rowContainer;
       this.rows.push(rowContainer);
 

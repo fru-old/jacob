@@ -1,3 +1,5 @@
+import { TreeRowListContainer } from './container'
+
 export class TreeTransformation {
   private readonly normalized: any[];
   private doneTransformation = false;
@@ -25,5 +27,17 @@ export class TreeTransformation {
   insertRows(rowList: any[], index: number) {
     this.transformationGuard();
     this.insertAtIndex(rowList, index, this.normalized.map(x => [x]));
+  }
+
+  removeSelected(rows: TreeRowListContainer) {
+    for(var i = rows.rowsOriginal.length - 1; i >= 0; i--) {
+
+      let nodesOriginal = rows.rowsOriginal[i];
+      for(var j = nodesOriginal.length - 1; j >= 0; j--) {
+        if(rows.rowsContainer[i].nodesContainer[j].isSelected) nodesOriginal.splice(j, 1);
+      }
+
+      if(nodesOriginal.length === 0) rows.rowsOriginal.splice(i, 1);
+    }
   }
 }

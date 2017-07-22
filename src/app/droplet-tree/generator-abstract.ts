@@ -3,7 +3,9 @@ import { BoundingBox, Coordinate, Target } from './generator.interfaces'
 export abstract class Generator {
 
   abstract generate(data): Target[];
-  abstract isSource(item): boolean;
+  abstract isInline(item): boolean;
+  abstract isSelected(item): boolean;
+  abstract getChildren(item, create: boolean = false): any[][];
 
   private getHighestPriority(matches: Target[]) {
     let highest = null;

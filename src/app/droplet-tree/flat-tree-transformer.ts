@@ -40,4 +40,9 @@ export class FlatTreeTransformer {
       if(nodesOriginal.length === 0) rows.rowsOriginal.splice(i, 1);
     }
   }
+
+  moveTrailingRowsInto(rowList: object[][], rows: RowListContainer, remaining: number) {
+    let trailing = rows.rowsOriginal.splice(remaining);
+    this.insertAtIndex(rowList, rowList.length - 1, trailing);
+  }
 }

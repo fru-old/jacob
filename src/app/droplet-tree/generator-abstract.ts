@@ -12,6 +12,15 @@ export abstract class Generator {
   abstract isSelected(node): boolean;
   abstract getChildren(node, create?: boolean): object[][];
   abstract getTargetArea(node, direction: Direction, before: boolean): BoundingBox;
+  abstract getHoverBox(node, direction: Direction): BoundingBox;
+
+  abstract getLevelWidth(): number;
+  getLevel(beforeRowLevel, afterRowLevel, level, offset): number {
+    let indicatedLevel = level + Math.floor(offset / this.getLevelWidth());
+    let maxLevel = beforeRowLevel + 1;
+    let minLevel = afterRowLevel  - 1;
+    return Math.max(Math.min(indicatedLevel, maxLevel), minLevel);
+  }
 
   private getHighestPriority(matches: Target[]) {
     let highest = null;

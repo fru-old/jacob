@@ -7,13 +7,11 @@ export abstract class Generator {
 
   constructor (public tree: FlatTreeContainer) { /*empty*/ }
   public transformer = new FlatTreeTransformer(this);
-  
+
   abstract generate(): Target[];
   abstract isSelected(node): boolean;
   abstract getChildren(node, create?: boolean): object[][];
-
-  abstract getTargetArea(node, direction: Direction): BoundingBox;
-  abstract getTargetBeforeNode(node, direction: Direction): BoundingBox;
+  abstract getTargetArea(node, direction: Direction, before: boolean): BoundingBox;
 
   private getHighestPriority(matches: Target[]) {
     let highest = null;

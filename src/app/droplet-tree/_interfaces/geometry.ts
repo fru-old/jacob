@@ -9,3 +9,5 @@ export interface Coordinate {
   x: number;
   y: number;
 }
+
+export enum Direction { TOP, RIGHT, BOTTOM, LEFT }

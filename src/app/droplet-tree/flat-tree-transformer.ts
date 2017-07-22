@@ -19,12 +19,12 @@ export class FlatTreeTransformer {
     return this.generator.tree.selected.map(x => x.rowContainer.nodesOriginal[x.index]);
   }
 
-  insertIntoRow(rowList: any[], index: number, indexInRow: number) {
+  insertIntoRow(rowList: object[][], index: number, indexInRow: number) {
     this.transformationGuard();
     this.insertAtIndex(rowList[index], indexInRow, this.getSelectedNodesOriginal());
   }
 
-  insertRows(rowList: any[], index: number) {
+  insertRows(rowList: object[][], index: number) {
     this.transformationGuard();
     this.insertAtIndex(rowList, index, this.getSelectedNodesOriginal().map(x => [x]));
   }

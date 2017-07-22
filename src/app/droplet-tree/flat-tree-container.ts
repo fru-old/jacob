@@ -8,15 +8,14 @@ export class FlatTreeContainer {
   public selected: NodeContainer[] = [];
   private previousOnLevel: RowContainer[] = [];
 
-  constructor (private generator: Generator, private tree: any[][]) {
+  constructor (private generator: Generator, private tree: object[][]) {
     this.flatten(tree);
   }
 
-  fillNodesAndSelected (nodesOriginal: any[], nodesContainer: NodeContainer[], rowContainer: RowContainer) {
+  fillNodesAndSelected (nodesOriginal: object[], nodesContainer: NodeContainer[], rowContainer: RowContainer) {
     for(let index = 0; index < nodesOriginal.length; index++) {
-      let isInline = this.generator.isInline(nodesOriginal[index]);
       let isSelected = this.generator.isSelected(nodesOriginal[index]);
-      let node = { index, rowContainer, isInline, isSelected };
+      let node = { index, rowContainer, isSelected };
       nodesContainer.push(node);
       if (isSelected) this.selected.push(node);
     }
@@ -24,7 +23,7 @@ export class FlatTreeContainer {
 
   private static MAX_DEPTH: number = 12;
 
-  flatten (rowsOriginal: any[][], level: number = 0) {
+  flatten (rowsOriginal: object[][], level: number = 0) {
     if (level === FlatTreeContainer.MAX_DEPTH) return;
     let rowsContainer: RowContainer[] = [];
     let listContainer: RowListContainer = { rowsOriginal, rowsContainer };

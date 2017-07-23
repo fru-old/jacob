@@ -5,17 +5,17 @@ import { FlatTreeTransformer } from './flat-tree-transformer'
 
 export abstract class Generator {
 
-  constructor (public tree: FlatTreeContainer) { /*empty*/ }
-  public transformer = new FlatTreeTransformer(this);
+  constructor (public readonly tree: FlatTreeContainer) { /*empty*/ }
+  public readonly transformer = new FlatTreeTransformer(this);
 
-  abstract generate(): Target[];
   abstract isSelected(node): boolean;
   abstract getChildren(node, create?: boolean): object[];
   abstract getMultiRow(node, create?: boolean): object[];
   abstract getTargetBox(node, direction: Direction, before: boolean): BoundingBox;
   abstract getHoverBox(node, direction: Direction, level?: number): BoundingBox;
-
+  abstract getHoverBoxOnSelected(node, level: number): BoundingBox;
   abstract getLevelWidth(): number;
+
   getLevel(beforeRowLevel, afterRowLevel, currentLevel, offset): number {
     let indicatedLevel = currentLevel + Math.floor(offset / this.getLevelWidth());
     let maxLevel = beforeRowLevel + 1;

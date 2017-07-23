@@ -1,19 +1,19 @@
 import { Generator } from '../generator-abstract'
 import { Direction } from '../_interfaces/geometry'
-import { RowContainer } from '../_interfaces/container'
+import { RowContainerFull } from '../_interfaces/container'
 import { Target, TargetActions } from '../_interfaces/target'
 
 export class TargetBuilder {
   constructor(private generator: Generator) { /*empty*/ }
 
-  private buildTopAndDownTargets(row: RowContainer, node: object, before: boolean, targets: Target[]) {
+  private buildTopAndDownTargets(row: RowContainerFull, node: object, before: boolean, targets: Target[]) {
     let actionTop  = null;
     let actionDown = null;
     targets.push(this.buildTarget(node, Direction.TOP, before, actionTop));
     targets.push(this.buildTarget(node, Direction.DOWN, before, actionDown));
   }
 
-  private buildLeftAndRightTargets(row: RowContainer, node: object, targets: Target[]) {
+  private buildLeftAndRightTargets(row: RowContainerFull, node: object, targets: Target[]) {
     let actionLeft  = null;
     let actionRight = null;
     targets.push(this.buildTarget(node, Direction.LEFT, false, actionLeft));
@@ -26,14 +26,19 @@ export class TargetBuilder {
     return { area, actions, priority: isLeftOrRight ? 2 : 1 };
   }
 
-  build(row: RowContainer): Target[] {
+  build(row: RowContainerFull): Target[] {
     let targets: Target[] = [];
-
-    for (let i = 0; i < row.nodesContainer.length; i++) {
-      let node = row.nodesContainer[i];
-      if (i === 0) this.buildTopAndDownTargets(row, node, true, targets);
-      this.buildTopAndDownTargets(row, node, false, targets);
-      this.buildLeftAndRightTargets(row, node, targets);
+    let original = row.shared.rowsRaw[row.rowsRawIndex];
+    let multi: object[] = this.generator.getMultiRow(original);
+    if (multi) {
+      for (let i = 0; i < multi.length; i++) {
+        if (i === 0) this.buildTopAndDownTargets(row, multi[i], true, targets);
+        this.buildTopAndDownTargets(row, multi[i], false, targets);
+        this.buildLeftAndRightTargets(row, multi[i], targets);
+      }
+    } else {
+      this.buildTopAndDownTargets(row, original, true, targets);
+      this.buildTopAndDownTargets(row, original, false, targets);
     }
     return targets;
   }

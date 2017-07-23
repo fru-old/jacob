@@ -16,7 +16,7 @@ export interface RowContainerShared {
 
 // Seperate interface, because these are only consistent before transformations
 export interface RowContainerFull extends RowContainer {
-  readonly flatListIndex: number;
+  readonly flatIndex: number;
   readonly level: number;
   readonly parentOnLevel: RowContainer[];
   firstChild: RowContainer;

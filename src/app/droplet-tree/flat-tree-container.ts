@@ -1,9 +1,10 @@
 import { RowContainer, RowContainerFull, RowContainerShared } from './_interfaces/container'
 import { Generator } from './generator-abstract'
+import { Target } from './_interfaces/target'
 
 export class FlatTreeContainer {
 
-  public flat: RowContainerFull[] = [];
+  private flat: RowContainerFull[] = [];
   public selected: RowContainer[] = [];
 
   constructor (private generator: Generator, private tree: object[][]) {
@@ -17,13 +18,33 @@ export class FlatTreeContainer {
     return [this.generator.isSelected(rowRaw)];
   }
 
-  flatten (rowsRaw: object[], level: number = 0, parentOnLevel: RowContainerFull[] = []) {
+  hasSomeSelected(current: RowContainerFull): boolean {
+    return this.flat[current.flatIndex].isSelected.some(x => x);
+  }
+
+  searchFlatForUnselected(current: RowContainerFull, forward: boolean) {
+    let index = current.flatIndex;
+    while (true) {
+      index += forward ? 1 : -1;
+      if (!this.flat[index]) return null;
+      if (!this.hasSomeSelected(this.flat[index])) return this.flat[index];
+    }
+  }
+
+  getChildrenSharedContainer(parent: RowContainerFull): RowContainerShared {
+    let next = this.flat[parent.flatIndex + 1];
+    if (next.level < parent.level) return next.shared;
+    let raw = parent.shared.rowsRaw[parent.rowsRawIndex];
+    return {rowsRaw: this.generator.getChildren(raw, true), rowsContainer: []}
+  }
+
+  private flatten (rowsRaw: object[], level: number = 0, parentOnLevel: RowContainerFull[] = []) {
     if (level === FlatTreeContainer.MAX_DEPTH) return;
     let shared: RowContainerShared = { rowsRaw, rowsContainer: [] };
 
     for(let index = 0; index < rowsRaw.length; index++) {
       let container = {
-        flatListIndex: this.flat.length, parentOnLevel, level, firstChild: null, lastChild: null,
+        flatIndex: this.flat.length, parentOnLevel, level, firstChild: null, lastChild: null,
         shared, isSelected: this.getIsSelected(rowsRaw[index]), rowsRawIndex: index
       };
       if (container.isSelected.some(x => x)) this.selected.push(container);
@@ -39,5 +60,10 @@ export class FlatTreeContainer {
         this.flatten(children, level + 1, parentOnLevel.concat([container]));
       }
     }
+  }
+
+  generateTargets(): Target[] {
+    // TODO implement
+    return null;
   }
 }

@@ -33,7 +33,7 @@ export class FlatTreeTransformer {
       movedUp.rowsRawIndex--;
     }
   }
-
+  
   moveChildren(target: RowContainerShared, firstMovedChild: RowContainer) {
     let shared = firstMovedChild.shared;
     let detachedRaw = shared.rowsRaw.splice(firstMovedChild.rowsRawIndex);

@@ -22,6 +22,10 @@ export class FlatTreeContainer {
     return this.flat[current.flatIndex].isSelected.some(x => x);
   }
 
+  getMultiRow(current: RowContainer): object[] {
+    return this.generator.getMultiRow(current.shared.rowsRaw[current.rowsRawIndex]);
+  }
+
   searchFlatForUnselected(current: RowContainerFull, forward: boolean) {
     let index = current.flatIndex;
     while (true) {

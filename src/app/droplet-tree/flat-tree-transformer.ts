@@ -11,7 +11,7 @@ export class FlatTreeTransformer {
   }
 
   private areAllNodesSelected(selected: RowContainer) {
-    let multi: any = this.generator.getMultiRow(selected.shared.rowsRaw[selected.rowsRawIndex]);
+    let multi = this.generator.tree.getMultiRow(selected);
     return !multi || multi.length === multi.filter((_, i) => selected.isSelected[i]).length;
   }
 
@@ -33,7 +33,7 @@ export class FlatTreeTransformer {
       movedUp.rowsRawIndex--;
     }
   }
-  
+
   moveChildren(target: RowContainerShared, firstMovedChild: RowContainer) {
     let shared = firstMovedChild.shared;
     let detachedRaw = shared.rowsRaw.splice(firstMovedChild.rowsRawIndex);
@@ -50,8 +50,7 @@ export class FlatTreeTransformer {
       if (this.areAllNodesSelected(selected)) this.removeFullRow(selected);
       else {
         // Only remove some nodes
-        let raw = selected.shared.rowsRaw[selected.rowsRawIndex];
-        let multi: object[] = this.generator.getMultiRow(raw);
+        let multi = this.generator.tree.getMultiRow(selected);
         for(let i = multi.length - 1; i >= 0; i--) {
           if (selected.isSelected[i]) {
             multi.splice(i, 1);

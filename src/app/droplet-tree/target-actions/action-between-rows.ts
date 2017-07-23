@@ -13,8 +13,7 @@ export class TargetActionBetweenRows implements TargetActions {
   protected getLevel(start: Coordinate, now: Coordinate) {
     if (!this.before) return 0;
     if (this.current) {
-      let raw: object = this.current.shared.rowsRaw[this.current.rowsRawIndex];
-      let multi: object[] = this.generator.getMultiRow(raw);
+      let multi = this.generator.tree.getMultiRow(this.current);
       if (multi && multi.length > 1) return this.current.level;
     }
     let afterLevel = this.after ? this.after.level : 0;
@@ -23,9 +22,9 @@ export class TargetActionBetweenRows implements TargetActions {
   }
 
   protected getNode(row: RowContainerFull, index: number) {
-    let raw: object = row.shared.rowsRaw[row.rowsRawIndex];
-    let multi: object[] = this.generator.getMultiRow(raw);
-    return multi ? multi[index] : (index > 0 ? null : raw);
+    let multi = this.generator.tree.getMultiRow(row);
+    if (multi) return multi[index];
+    return index > 0 ? null : row.shared.rowsRaw[row.rowsRawIndex];
   }
 
   hover(start: Coordinate, now: Coordinate): BoundingBox {

@@ -15,8 +15,8 @@ export abstract class Generator {
   abstract getHoverBox(node, direction: Direction, level?: number): BoundingBox;
 
   abstract getLevelWidth(): number;
-  getLevel(beforeRowLevel, afterRowLevel, offset): number {
-    let indicatedLevel = beforeRowLevel + Math.floor(offset / this.getLevelWidth());
+  getLevel(beforeRowLevel, afterRowLevel, currentLevel, offset): number {
+    let indicatedLevel = currentLevel + Math.floor(offset / this.getLevelWidth());
     let maxLevel = beforeRowLevel + 1;
     let minLevel = afterRowLevel  - 1;
     return Math.max(Math.min(indicatedLevel, maxLevel), minLevel, 0);

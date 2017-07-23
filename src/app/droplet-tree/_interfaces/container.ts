@@ -1,11 +1,8 @@
 export interface NodeContainer {
-  readonly index: number;
-  readonly rowContainer: RowContainer;
-
-  // Inline nodes don't have children but multiple can be in the same row
-  // readonly isInline:  boolean;
-
-  // The selected nodes are beeing dragged etc.
+  // Consistent for inserts:
+  index: number;
+  rowContainer: RowContainer;
+  // Consistent:
   readonly isSelected: boolean;
 }
 

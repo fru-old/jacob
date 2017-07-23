@@ -4,8 +4,8 @@ import { Target } from './_interfaces/target'
 
 export class FlatTreeContainer {
 
-  private flat: RowContainerFull[] = [];
-  public selected: RowContainer[] = [];
+  public readonly flat: RowContainerFull[] = [];
+  public readonly selected: RowContainer[] = [];
 
   constructor (private generator: Generator, private tree: object[][]) {
     this.flatten(tree);

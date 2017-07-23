@@ -12,6 +12,11 @@ export class TargetActionBetweenRows implements TargetActions {
 
   protected getLevel(start: Coordinate, now: Coordinate) {
     if (!this.before) return 0;
+    if (this.current) {
+      let raw: object = this.current.shared.rowsRaw[this.current.rowsRawIndex];
+      let multi: object[] = this.generator.getMultiRow(raw);
+      if (multi && multi.length > 1) return this.current.level;
+    }
     let afterLevel = this.after ? this.after.level : 0;
     let currentLevel = this.current ? this.current.level : this.before.level;
     return this.generator.getLevel(this.before.level, afterLevel, currentLevel, now.x - start.x);

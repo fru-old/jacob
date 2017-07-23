@@ -2,13 +2,35 @@ import { Generator } from '../generator-abstract'
 import { Direction } from '../_interfaces/geometry'
 import { RowContainerFull } from '../_interfaces/container'
 import { Target, TargetActions } from '../_interfaces/target'
+import { TargetActionBetweenRows } from './action-between-rows'
+import { TargetActionOnSelected } from './action-on-selected'
 
 export class TargetBuilder {
   constructor(private generator: Generator) { /*empty*/ }
 
   private buildTopAndDownTargets(row: RowContainerFull, node: object, before: boolean, targets: Target[]) {
-    let actionTop  = null;
-    let actionDown = null;
+
+    let beforeRow = this.generator.tree.flat[row.flatIndex - 1];
+    let afterRow  = this.generator.tree.flat[row.flatIndex + 1];
+
+    let hasSelectedRow = this.generator.tree.hasSomeSelected(row);
+    let hasSelectedBefore = this.generator.tree.hasSomeSelected(beforeRow);
+    let hasSelectedAfter  = this.generator.tree.hasSomeSelected(afterRow);
+
+    let actionTop  = null, actionDown = null;
+
+    if (hasSelectedRow || hasSelectedBefore) {
+      actionTop = new TargetActionOnSelected(this.generator, row, node);
+    } else {
+      actionTop = new TargetActionBetweenRows(this.generator, beforeRow, row);
+    }
+
+    if (hasSelectedRow || hasSelectedAfter) {
+      actionDown = new TargetActionOnSelected(this.generator, row, node);
+    } else {
+      actionDown = new TargetActionBetweenRows(this.generator, row, afterRow);
+    }
+
     targets.push(this.buildTarget(node, Direction.TOP, before, actionTop));
     targets.push(this.buildTarget(node, Direction.DOWN, before, actionDown));
   }

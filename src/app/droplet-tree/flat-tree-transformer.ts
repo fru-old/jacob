@@ -22,6 +22,15 @@ export class FlatTreeTransformer {
     else return raw.filter((_, i) => selected.isSelected[i]);
   }
 
+  private removeFullRow(selected: RowContainer) {
+    let shared = selected.shared;
+    shared.rowsRaw.splice(selected.rowsRawIndex, 1);
+    shared.rowsContainer.splice(selected.rowsRawIndex, 1);
+    for(let movedUp of shared.rowsContainer.slice(selected.rowsRawIndex)) {
+      movedUp.rowsRawIndex--;
+    }
+  }
+
   moveChildren(target: RowContainerShared, firstMovedChild: RowContainer) {
     let shared = firstMovedChild.shared;
     let detachedRaw = shared.rowsRaw.splice(firstMovedChild.rowsRawIndex);
@@ -31,15 +40,6 @@ export class FlatTreeTransformer {
     }
     this.insertAtIndex(target.rowsContainer, null, detachedContainer);
     this.insertAtIndex(target.rowsRaw, null, detachedRaw);
-  }
-
-  private removeFullRow(selected: RowContainer) {
-    let shared = selected.shared;
-    shared.rowsRaw.splice(selected.rowsRawIndex, 1);
-    shared.rowsContainer.splice(selected.rowsRawIndex, 1);
-    for(let movedUp of shared.rowsContainer.slice(selected.rowsRawIndex)) {
-      movedUp.rowsRawIndex--;
-    }
   }
 
   removeSelected() {

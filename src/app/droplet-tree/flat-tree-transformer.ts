@@ -11,15 +11,18 @@ export class FlatTreeTransformer {
   }
 
   private areAllNodesSelected(selected: RowContainer) {
-    let raw: any = selected.shared.rowsRaw[selected.rowsRawIndex];
-    return raw.length >= 0
-        && raw.length === raw.filter((_, i) => selected.isSelected[i]).length;
+    let multi: any = this.generator.getMultiRow(selected.shared.rowsRaw[selected.rowsRawIndex]);
+    return !multi || multi.length === multi.filter((_, i) => selected.isSelected[i]).length;
   }
 
   private getSelectedRaw(selected: RowContainer) {
-    let raw: any = selected.shared.rowsRaw[selected.rowsRawIndex];
+    let raw: object = selected.shared.rowsRaw[selected.rowsRawIndex];
+    let multi: object[] = this.generator.getMultiRow(raw);
     if (this.areAllNodesSelected(selected)) return raw;
-    else return raw.filter((_, i) => selected.isSelected[i]);
+    let result = {};
+    let multiResult = this.generator.getMultiRow({}, true);
+    this.insertAtIndex(multiResult, null, multi.filter((_, i) => selected.isSelected[i]));
+    return result;
   }
 
   private removeFullRow(selected: RowContainer) {
@@ -47,10 +50,11 @@ export class FlatTreeTransformer {
       if (this.areAllNodesSelected(selected)) this.removeFullRow(selected);
       else {
         // Only remove some nodes
-        let raw: any = selected.shared.rowsRaw[selected.rowsRawIndex];
-        for(let i = raw.length - 1; i >= 0; i--) {
+        let raw = selected.shared.rowsRaw[selected.rowsRawIndex];
+        let multi: object[] = this.generator.getMultiRow(raw);
+        for(let i = multi.length - 1; i >= 0; i--) {
           if (selected.isSelected[i]) {
-            raw.splice(i, 1);
+            multi.splice(i, 1);
             selected.isSelected.splice(i, 1);
           }
         }
@@ -61,8 +65,9 @@ export class FlatTreeTransformer {
   copySelectedIntoRow(row: RowContainer, indexInRow: number) {
     let rawInserted = [];
     for(let selected of this.generator.tree.selected) {
-      let raw = this.getSelectedRaw(selected);
-      rawInserted = rawInserted.concat(raw.length >= 0 ? raw: [raw]);
+      let raw: object = selected.shared.rowsRaw[selected.rowsRawIndex];
+      let multi = this.generator.getMultiRow(raw);
+      rawInserted = rawInserted.concat(multi ? multi: [raw]);
     }
     this.insertAtIndex(row.shared.rowsRaw, indexInRow, rawInserted);
     this.insertAtIndex(row.isSelected, indexInRow, new Array(rawInserted.length));

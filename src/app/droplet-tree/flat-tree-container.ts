@@ -1,17 +1,16 @@
-import { RowListContainer, RowContainer, NodeContainer } from './_interfaces/container'
+import { RowContainer } from './_interfaces/container'
 import { Generator } from './generator-abstract'
 
 export class FlatTreeContainer {
 
-  public lists: RowListContainer[] = [];
-  public rows: RowContainer[] = [];
-  public selected: NodeContainer[] = [];
+  public flatList: RowContainer[] = [];
+  public selected: RowContainer[] = [];
   private previousOnLevel: RowContainer[] = [];
 
   constructor (private generator: Generator, private tree: object[][]) {
-    this.flatten(tree);
+    //this.flatten(tree);
   }
-
+  /*
   fillNodesAndSelected (nodesOriginal: object[], nodesContainer: NodeContainer[], rowContainer: RowContainer) {
     for(let index = 0; index < nodesOriginal.length; index++) {
       let isSelected = this.generator.isSelected(nodesOriginal[index]);
@@ -45,5 +44,5 @@ export class FlatTreeContainer {
       }
     }
     this.lists.push(listContainer);
-  }
+  }*/
 }

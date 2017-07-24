@@ -5,7 +5,7 @@ import { DragBackend } from '../drag-backend';
 export interface DropletRoot {
   getNativeElement(): HTMLElement;
   setHover(box: BoundingBox);
-  readonly generator: Generator;
+  context: any;
   readonly backend: DragBackend;
 }
 

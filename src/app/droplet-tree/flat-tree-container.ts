@@ -1,15 +1,18 @@
-import { RowContainer, RowContainerFull, RowContainerShared } from './_interfaces/container'
-import { Generator } from './generator-abstract'
-import { Target } from './_interfaces/target'
+import { RowContainer, RowContainerFull, RowContainerShared } from './_interfaces/container';
+import { Generator } from './generator-abstract';
+import { Target } from './_interfaces/target';
+import { TargetBuilder } from './target-actions/target-builder';
 
 export class FlatTreeContainer {
 
-  public readonly flat: RowContainerFull[] = [];
-  public readonly selected: RowContainer[] = [];
+  readonly flat: RowContainerFull[] = [];
+  readonly selected: RowContainer[] = [];
 
-  constructor (private generator: Generator, private tree: object[][]) {
+  constructor (private generator: Generator, private tree: object[]) {
     this.flatten(tree);
   }
+
+  readonly targetBuilder = new TargetBuilder(this.generator);
 
   private static MAX_DEPTH: number = 12;
 
@@ -19,6 +22,7 @@ export class FlatTreeContainer {
   }
 
   hasSomeSelected(current: RowContainerFull): boolean {
+    if (!current) return false;
     return this.flat[current.flatIndex].isSelected.some(x => x);
   }
 
@@ -53,6 +57,7 @@ export class FlatTreeContainer {
       };
       if (container.isSelected.some(x => x)) this.selected.push(container);
       shared.rowsContainer.push(container);
+      this.flat.push(container);
 
       let parent = parentOnLevel[level-1];
       if(parent && index === 0) parent.firstChild = container;
@@ -61,13 +66,13 @@ export class FlatTreeContainer {
       // Here isSelected is still garantied to be a full list
       if(container.isSelected.some(x => !x)) {
         let children = this.generator.getChildren(rowsRaw[index]);
-        this.flatten(children, level + 1, parentOnLevel.concat([container]));
+        if (children) this.flatten(children, level + 1, parentOnLevel.concat([container]));
       }
     }
   }
 
   generateTargets(): Target[] {
-    // TODO implement
-    return null;
+    if (this.flat.length === 0) return [];
+    return this.flat.map(x => this.targetBuilder.build(x)).reduce((a,b) => a.concat(b));
   }
 }

@@ -7,7 +7,7 @@ import { DropletTreeRoot } from './droplet-tree-root';
 @Component({
   selector: '[droplet-tree-node]',
   template: `
-    <droplet-tree-inner [source]="source" [root]="root" [preview]="HiddenDataHelper.getHiddenProperty(TreePreview.PREVIEW, context)">
+    <droplet-tree-inner [source]="source" [root]="root" [preview]="hidden.getHidden(hidden.PREVIEW, context)">
       <ng-content></ng-content>
     </droplet-tree-inner>
   `
@@ -19,6 +19,10 @@ export class DropletTreeNode implements DropletSource, OnChanges, OnDestroy {
 
   private readonly id = 'S' + HiddenDataHelper.getUniqueId();
   private undo: any;
+
+  // Used for bindings:
+  private readonly hidden = HiddenDataHelper;
+  private readonly source = this;
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {}
 
@@ -36,6 +40,6 @@ export class DropletTreeNode implements DropletSource, OnChanges, OnDestroy {
 
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
     if(this.undo) this.undo();
-    this.undo = this.root.generator.hidden.setHidden(HiddenDataHelper.SOURCE, this.context, this);
+    this.undo = HiddenDataHelper.setHidden(HiddenDataHelper.SOURCE, this.context, this);
   }
 }

@@ -16,7 +16,6 @@ export class DropletTreeRoot implements DropletRoot {
   @Input() context: any;
 
   readonly backend: DragBackend;
-  readonly generator: Generator;
   private x: number;
   private y: number;
   private width: number;
@@ -24,9 +23,9 @@ export class DropletTreeRoot implements DropletRoot {
   private preview: boolean = false;
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {
-    // TODO use backend
+    this.backend = new DragBackend(this);
   }
-  
+
   getNativeElement() {
     return this.reference.nativeElement;
   }

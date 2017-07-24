@@ -5,6 +5,7 @@ import { Target } from './_interfaces/target';
 import { Coordinate } from './_interfaces/geometry';
 import { DropletRoot, DropletSource, DropletPreview } from './_interfaces/droplet';
 import { Generator } from './generator-abstract';
+import { DefaultGenerator } from './generator-default';
 
 export class DragBackend {
 
@@ -32,8 +33,9 @@ export class DragBackend {
   private source: DropletSource;
   private begin: Coordinate;
   private lastCoordinate: Coordinate;
+  generator: Generator;
 
-  public constructor(private root: DropletRoot, private generator: Generator) {
+  public constructor(private root: DropletRoot) {
     this.backend = this.getBackend();
     this.backend.connectDropTarget('root', root.getNativeElement());
   }
@@ -102,6 +104,7 @@ export class DragBackend {
   }
 
   public updateDropZones() {
+    this.generator = new DefaultGenerator(this.root.context);
     this.engine.clear();
     for(let target of this.generator.tree.generateTargets()) {
       this.engine.insert(DragBackend.getRBushRectangleFromTarget(target));

@@ -2,7 +2,7 @@ import { Component, Input, SimpleChange } from '@angular/core';
 import { OnChanges, OnDestroy } from '@angular/core';
 import { DropletRoot, DropletSource, DropletPreview } from '../_interfaces/droplet';
 
-Component({
+@Component({
   selector: 'droplet-tree-inner',
   template: `<ng-content></ng-content>`
 })

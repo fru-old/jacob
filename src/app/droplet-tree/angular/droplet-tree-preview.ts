@@ -26,6 +26,6 @@ export class DropletTreePreview implements DropletPreview, OnChanges, OnDestroy 
 
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
     if(this.undo) this.undo();
-    this.undo = this.root.generator.hidden.setHidden(HiddenDataHelper.PREVIEW, this.context, this);
+    this.undo = HiddenDataHelper.setHidden(HiddenDataHelper.PREVIEW, this.context, this);
   }
 }

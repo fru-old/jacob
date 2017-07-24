@@ -37,16 +37,17 @@ export class DefaultGenerator extends Generator {
   }
 
   getTargetBox(node, direction: Direction, before: boolean): BoundingBox {
-
-
+    // TODO
     return null;
   }
 
   getHoverBox(node, direction: Direction, level?: number): BoundingBox {
+    // TODO
     return null;
   }
 
   getHoverBoxOnSelected(node, level: number): BoundingBox {
+    // TODO
     return null;
   }
 }

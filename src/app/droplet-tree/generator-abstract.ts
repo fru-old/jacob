@@ -2,11 +2,13 @@ import { BoundingBox, Coordinate, Direction } from './_interfaces/geometry'
 import { Target } from './_interfaces/target'
 import { FlatTreeContainer } from './flat-tree-container'
 import { FlatTreeTransformer } from './flat-tree-transformer'
+import { HiddenDataHelper } from './hidden-data-helper'
 
 export abstract class Generator {
 
   constructor (public readonly tree: FlatTreeContainer) { /*empty*/ }
   public readonly transformer = new FlatTreeTransformer(this);
+  public readonly hidden = new HiddenDataHelper();
 
   abstract isSelected(node): boolean;
   abstract getChildren(node, create?: boolean): object[];

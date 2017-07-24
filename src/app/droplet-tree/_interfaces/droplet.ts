@@ -1,8 +1,12 @@
-import { BoundingBox } from './geometry'
+import { BoundingBox } from './geometry';
+import { Generator } from '../generator-abstract';
+import { DragBackend } from '../drag-backend';
 
 export interface DropletRoot {
   getNativeElement(): HTMLElement;
   setHover(box: BoundingBox);
+  readonly generator: Generator;
+  readonly backend: DragBackend;
 }
 
 export interface DropletSource {

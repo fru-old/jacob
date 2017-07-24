@@ -1,10 +1,10 @@
 import { TouchBackend } from 'react-dnd-touch-backend';
 import HtmlBackend from 'react-dnd-html5-backend';
 import rbush from 'rbush';
-import { Target } from './_interfaces/target'
-import { Coordinate } from './_interfaces/geometry'
-import { DropletRoot, DropletSource, DropletPreview } from './_interfaces/droplet'
-import { Generator } from './generator-abstract'
+import { Target } from './_interfaces/target';
+import { Coordinate } from './_interfaces/geometry';
+import { DropletRoot, DropletSource, DropletPreview } from './_interfaces/droplet';
+import { Generator } from './generator-abstract';
 
 export class DragBackend {
 
@@ -27,18 +27,15 @@ export class DragBackend {
 
   private engine: any = rbush();
   private backend: HtmlBackend;
-  private generator: Generator;
   private isDragging: boolean = false;
   private registered: {[key: string]: DropletSource} = {};
   private source: DropletSource;
   private begin: Coordinate;
   private lastCoordinate: Coordinate;
 
-  public constructor(private root: DropletRoot) {
+  public constructor(private root: DropletRoot, private generator: Generator) {
     this.backend = this.getBackend();
     this.backend.connectDropTarget('root', root.getNativeElement());
-    // TODO use default generator
-    this.generator = null;
   }
 
   private getBackend() {

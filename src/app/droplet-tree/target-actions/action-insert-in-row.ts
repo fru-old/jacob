@@ -13,6 +13,6 @@ export class TargetActionInsertInRow implements TargetActions {
   }
 
   drop(start: Coordinate, now: Coordinate): void {
-
+    
   }
 }

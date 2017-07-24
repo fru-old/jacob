@@ -9,6 +9,11 @@ export class HiddenDataHelper {
     return context.__droplet || {};
   }
 
+  private static idCounter = 1;
+  public static getUniqueId() {
+    return HiddenDataHelper.idCounter++;
+  }
+
   getHidden(name: string, context: any): any {
     return this.getOrInitDropletProperty(context)[name];
   }

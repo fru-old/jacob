@@ -6,15 +6,18 @@ import { ElementModule } from './elements/element.module';
 import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
-import { TreeRoot, TreeSource, TreePreview, TreeInner } from './app.component';
+import { DropletTreeNode } from './droplet-tree/angular/droplet-tree-node';
+import { DropletTreeRoot } from './droplet-tree/angular/droplet-tree-root';
+import { DropletTreePreview } from './droplet-tree/angular/droplet-tree-preview';
+import { DropletTreeInner } from './droplet-tree/angular/droplet-tree-inner';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TreeRoot,
-    TreeSource,
-    TreePreview,
-    TreeInner
+    DropletTreeRoot,
+    DropletTreeNode,
+    DropletTreePreview,
+    DropletTreeInner
   ],
   imports: [
     BrowserModule,

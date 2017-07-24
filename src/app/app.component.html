@@ -1,17 +1,17 @@
 
-<ul class="tree-root" tree-droplet-root [context]="tree" #treeRoot>
-  <li tree-droplet-preview [context]="tree[0]">
-    <span class="tree-element" tree-droplet [context]="tree[0]" [root]="treeRoot">
+<ul class="tree-root" droplet-tree-root [context]="tree" #treeRoot>
+  <li droplet-tree-preview [context]="tree[0]" [root]="treeRoot">
+    <span class="tree-element" droplet-tree-node [context]="tree[0]" [root]="treeRoot">
       {{tree[0].title}} <button>Action</button>
     </span>
   </li>
-  <li tree-droplet-preview [context]="tree[1]">
-    <span class="tree-element" tree-droplet [context]="tree[1]" [root]="treeRoot">
+  <li droplet-tree-preview [context]="tree[1]" [root]="treeRoot">
+    <span class="tree-element" droplet-tree-node [context]="tree[1]" [root]="treeRoot">
       {{tree[1].title}} <button>Action</button>
     </span>
     <ul>
-      <li tree-droplet-preview [context]="tree[1].children[0]">
-        <span class="tree-element" tree-droplet [context]="tree[1].children[0]" [root]="treeRoot">
+      <li droplet-tree-preview [context]="tree[1].children[0]" [root]="treeRoot">
+        <span class="tree-element" droplet-tree-node [context]="tree[1].children[0]" [root]="treeRoot">
           {{tree[1].children[0].title}} <button>Action</button>
         </span>
       </li>

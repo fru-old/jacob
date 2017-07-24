@@ -45,8 +45,8 @@ export class DragBackend {
     let options = {
       getActions: () => this.getActions(),
       getMonitor: () => this.getMonitor(),
-      getRegistry: () => ({ addSource: () => {} }),
-      getContext: () => ({ window })
+      getContext: () => ({ window }),
+      getRegistry: () => ({ addSource: () => {} })
     };
     let backend = new HtmlBackend(options, { enableMouseEvents: true });
     backend.setup();
@@ -92,6 +92,7 @@ export class DragBackend {
   public connect(source: DropletSource, preview: DropletPreview) {
     let sourceElement = source.getNativeElement();
     let previewElement = (preview && preview.getNativeElement()) || sourceElement;
+
     let undoSource = this.backend.connectDragSource(source.getId(), sourceElement);
     let undoPreview = this.backend.connectDragPreview(source.getId(), previewElement);
 

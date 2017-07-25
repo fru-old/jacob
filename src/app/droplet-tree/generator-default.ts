@@ -7,15 +7,14 @@ import { Generator } from './generator-abstract';
 
 export class DefaultGenerator extends Generator {
 
-  // TODO fix this options cant be changed
-  public options = {
-    levelWidth: 20,
-    spacing: 8,
-    childProperty: 'children',
-    multiProperty: 'inline'
-  };
-
-  constructor (private root: HTMLElement, private raw: any[]) { super(); }
+  constructor (private root: HTMLElement, private raw: any[], options: any = {}) {
+    super();
+    this.options.levelWidth = options.levelWidth || 20;
+    this.options.spacing    = options.spacing    || 8;
+    this.options.childProperty = options.childProperty || 'children';
+    this.options.multiProperty = options.multiProperty || 'inline';
+  }
+  private options: any = {};
   readonly tree: FlatTreeContainer = new FlatTreeContainer(this, this.raw);
 
   private getProperty(node, property, create?: boolean) {

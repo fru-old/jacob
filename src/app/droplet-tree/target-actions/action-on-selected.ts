@@ -6,7 +6,7 @@ import { TargetActionBetweenRows } from './action-between-rows'
 
 export class TargetActionOnSelected extends TargetActionBetweenRows {
 
-  constructor(generator: Generator, current: RowContainerFull, private node: object)
+  constructor(generator: Generator, current: RowContainerFull)
   {
     super(generator,
       generator.tree.searchFlatForUnselected(current, false),
@@ -14,9 +14,15 @@ export class TargetActionOnSelected extends TargetActionBetweenRows {
     this.current = current;
   }
 
+  private getFirstNode() {
+    let node = this.current.shared.rowsRaw[this.current.rowsRawIndex];
+    if (this.generator.getMultiRow(node)) return this.generator.getMultiRow(node)[0];
+    return node;
+  }
+
   hover(start: Coordinate, now: Coordinate): BoundingBox {
     let level = this.getLevel(start, now);
-    return this.generator.getHoverBoxOnSelected(this.node, level);
+    return this.generator.getHoverBoxOnSelected(this.getFirstNode(), level);
   }
 
   drop(start: Coordinate, now: Coordinate): void {

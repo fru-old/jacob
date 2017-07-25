@@ -18,7 +18,7 @@ export abstract class Generator {
   abstract getLevelWidth(): number;
 
   getLevel(beforeRowLevel, afterRowLevel, currentLevel, offset): number {
-    let indicatedLevel = currentLevel + Math.floor(offset / this.getLevelWidth());
+    let indicatedLevel = currentLevel + Math.round(offset / this.getLevelWidth());
     let maxLevel = beforeRowLevel + 1;
     let minLevel = afterRowLevel  - 1;
     return Math.max(Math.min(indicatedLevel, maxLevel), minLevel, 0);

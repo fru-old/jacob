@@ -19,16 +19,21 @@ export class TargetBuilder {
 
     let actionTop  = null, actionDown = null;
 
-    if (hasSelectedRow || hasSelectedBefore) {
-      actionTop = new TargetActionOnSelected(this.generator, row, node);
+    if (hasSelectedRow) {
+      actionTop  = new TargetActionOnSelected(this.generator, row);
+      actionDown = new TargetActionOnSelected(this.generator, row);
     } else {
-      actionTop = new TargetActionBetweenRows(this.generator, beforeRow, row);
-    }
+      if (hasSelectedBefore) {
+        actionTop = new TargetActionOnSelected(this.generator, beforeRow);
+      } else {
+        actionTop = new TargetActionBetweenRows(this.generator, beforeRow, row);
+      }
 
-    if (hasSelectedRow || hasSelectedAfter) {
-      actionDown = new TargetActionOnSelected(this.generator, row, node);
-    } else {
-      actionDown = new TargetActionBetweenRows(this.generator, row, afterRow);
+      if(hasSelectedAfter) {
+        actionDown = new TargetActionOnSelected(this.generator, afterRow);
+      } else {
+        actionDown = new TargetActionBetweenRows(this.generator, row, afterRow);
+      }
     }
 
     targets.push(this.buildTarget(node, Direction.TOP, before, actionTop));

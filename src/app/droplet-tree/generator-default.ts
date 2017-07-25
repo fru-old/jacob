@@ -9,7 +9,7 @@ export class DefaultGenerator extends Generator {
 
   // TODO fix this options cant be changed
   public options = {
-    levelWidth: 30,
+    levelWidth: 20,
     spacing: 8,
     childProperty: 'children',
     multiProperty: 'inline'
@@ -37,14 +37,14 @@ export class DefaultGenerator extends Generator {
     return HiddenDataHelper.getHidden(HiddenDataHelper.IS_SELECTED, node);
   }
 
-  private getElementRect(node): BoundingBox {
-    let element;
-    if (this.isSelected(node)) {
-      element = HiddenDataHelper.getHidden(HiddenDataHelper.PREVIEW, node);
-    } else {
-      element = HiddenDataHelper.getHidden(HiddenDataHelper.SOURCE, node);
-    }
-    let box = element.reference.nativeElement.getBoundingClientRect();
+  private getNodeRect(node, dontUsePreview?: boolean): BoundingBox {
+    let key = (this.isSelected(node) && !dontUsePreview) ? HiddenDataHelper.PREVIEW : HiddenDataHelper.SOURCE;
+    let element = HiddenDataHelper.getHidden(key, node).reference.nativeElement;
+    return this.getElementRect(element);
+  }
+
+  private getElementRect(element: HTMLElement): BoundingBox {
+    let box = element.getBoundingClientRect();
     let relative = this.root.getBoundingClientRect();
     return {
       x: box.left - relative.left,
@@ -55,15 +55,16 @@ export class DefaultGenerator extends Generator {
   }
 
   expand(box: BoundingBox) {
-    box.x -= this.options.spacing;
-    box.y -= this.options.spacing;
-    box.height += 2 * this.options.spacing;
-    box.width  += 2 * this.options.spacing;
-    return box;
+    return {
+      x: box.x - this.options.spacing,
+      y: box.y - this.options.spacing / 2,
+      width:  box.width  + 2 * this.options.spacing,
+      height: box.height + this.options.spacing
+    };
   }
 
   getTargetBox(node, direction: Direction, before: boolean): BoundingBox {
-    let box = this.getElementRect(node);
+    let box = this.getNodeRect(node);
     let halfHeight = Math.ceil(box.height / 2);
     if (direction === Direction.TOP) box.height = halfHeight;
     else if (direction === Direction.DOWN) {
@@ -76,20 +77,30 @@ export class DefaultGenerator extends Generator {
     return this.expand(box);
   }
 
-  getHoverBox(node, direction: Direction, level?: number): BoundingBox {
-    let box = this.getElementRect(node);
-    if (direction === Direction.DOWN || direction === Direction.TOP) {
-      if (direction === Direction.TOP)  box.y -= this.options.spacing;
-      if (direction === Direction.DOWN) box.y += box.height;
-      box.height = this.options.spacing;
-    } else {
-      throw "";
+  setLevel(y: number, height: number, level: number): BoundingBox {
+    let root = this.getElementRect(this.root);
+    let levelSpacing = level * this.options.levelWidth;
+    return {
+      y, height, x: this.options.spacing + levelSpacing,
+      width: root.width - 2 * this.options.spacing - levelSpacing
     }
-    return box;
+  }
+
+  getHoverBox(node, direction: Direction, level?: number): BoundingBox {
+    let box = this.getNodeRect(node, true);
+    if (direction === Direction.DOWN || direction === Direction.TOP) {
+      let y = box.y + (direction === Direction.DOWN ? box.height : -this.options.spacing);
+      return this.setLevel(y, this.options.spacing, level);
+    } else {
+      if (direction === Direction.LEFT)  box.x -= this.options.spacing;
+      if (direction === Direction.RIGHT) box.x += box.width;
+      box.width = this.options.spacing;
+    }
   }
 
   getHoverBoxOnSelected(node, level: number): BoundingBox {
-    // TODO
-    return null;
+    let box = this.getNodeRect(node, true);
+    let y = box.y + Math.ceil(box.height / 2) - this.options.spacing / 2;
+    return this.setLevel(y, this.options.spacing, level);
   }
 }

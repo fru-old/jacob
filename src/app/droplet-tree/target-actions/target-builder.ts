@@ -36,19 +36,19 @@ export class TargetBuilder {
       }
     }
 
-    targets.push(this.buildTarget(node, Direction.TOP, isFirst, actionTop));
-    targets.push(this.buildTarget(node, Direction.DOWN, isFirst, actionDown));
+    targets.push(this.buildTarget(node, Direction.TOP, actionTop, isFirst ? row.level : 0));
+    targets.push(this.buildTarget(node, Direction.DOWN, actionDown, isFirst ? row.level : 0));
   }
 
   private buildLeftAndRightTargets(row: RowContainerFull, node: object, targets: Target[]) {
     let actionLeft  = null;
     let actionRight = null;
-    targets.push(this.buildTarget(node, Direction.LEFT, false, actionLeft));
-    targets.push(this.buildTarget(node, Direction.RIGHT, false, actionRight));
+    targets.push(this.buildTarget(node, Direction.LEFT, actionLeft));
+    targets.push(this.buildTarget(node, Direction.RIGHT, actionRight));
   }
 
-  private buildTarget(node: object, direction: Direction, isFirst: boolean, actions: TargetActions ) {
-    let area = this.generator.getTargetBox(node, direction, isFirst);
+  private buildTarget(node: object, direction: Direction, actions: TargetActions, levelAdded?: number) {
+    let area = this.generator.getTargetBox(node, direction, levelAdded);
     let isLeftOrRight = direction === Direction.LEFT || direction === Direction.RIGHT;
     return { area, actions, priority: isLeftOrRight ? 2 : 1 };
   }

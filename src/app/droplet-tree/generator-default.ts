@@ -65,13 +65,16 @@ export class DefaultGenerator extends Generator {
     };
   }
 
-  getTargetBox(node, direction: Direction, isFirst: boolean): BoundingBox {
+  getTargetBox(node, direction: Direction, levelAdded: number): BoundingBox {
     let box = this.getNodeRect(node);
     let halfHeight = Math.ceil(box.height / 2);
-    if (direction === Direction.TOP) box.height = halfHeight;
-    else if (direction === Direction.DOWN) {
-      box.height -= halfHeight;
-      box.y += halfHeight;
+    if (direction === Direction.DOWN || direction === Direction.TOP) {
+      if (direction === Direction.TOP) box.height = halfHeight;
+      else { box.height -= halfHeight; box.y += halfHeight; }
+      if (levelAdded) {
+        box.x -= levelAdded * this.options.levelWidth;
+        box.width += levelAdded * this.options.levelWidth;
+      }
     } else {
       if (direction === Direction.RIGHT) box.x += box.width;
       box.width = 0;

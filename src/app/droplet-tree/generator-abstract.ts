@@ -12,7 +12,7 @@ export abstract class Generator {
   abstract isSelected(node): boolean;
   abstract getChildren(node, create?: boolean): object[];
   abstract getMultiRow(node, create?: boolean): object[];
-  abstract getTargetBox(node, direction: Direction, before: boolean): BoundingBox;
+  abstract getTargetBox(node, direction: Direction, levelAdded: number): BoundingBox;
   abstract getHoverBox(node, direction: Direction, level?: number): BoundingBox;
   abstract getHoverBoxOnSelected(node, level: number): BoundingBox;
   abstract getLevelWidth(): number;

@@ -1,5 +1,5 @@
 import { Component, Input, ElementRef, Inject } from '@angular/core';
-import { ContentChild, TemplateRef } from '@angular/core';
+import { ContentChild, ViewChild, TemplateRef } from '@angular/core';
 import { DragBackend } from '../drag-backend';
 import { DropletRoot } from '../_interfaces/droplet';
 import { BoundingBox } from '../_interfaces/geometry';
@@ -9,12 +9,16 @@ import { DropletTreePreview } from './droplet-tree-preview';
 @Component({
   selector: '[droplet-tree-root]',
   template: `
+  <ng-template #itemDefault let-item let-index="index">
+    <li>{{item.title}}!!</li>
+  </ng-template>
+
     <ng-container
       *ngTemplateOutlet="rowTemplate; context: {recurse: childrenTemplate}"
       ></ng-container>
     <ng-container *ngFor="let item of ['test', 2]; let index = index">
       <ng-container
-        *ngTemplateOutlet="itemTemplate; context: {$implicit: item, index: index}">
+        *ngTemplateOutlet="itemTemplate2 || itemDefaultTemplate; context: {$implicit: item, index: index}">
       </ng-container>
     </ng-container>
     <div class="highlight" *ngIf="preview"
@@ -24,14 +28,11 @@ import { DropletTreePreview } from './droplet-tree-preview';
 export class DropletTreeRoot implements DropletRoot {
   @Input('droplet-tree-root') context: any;
 
-  @ContentChild('item2')
-  public itemTemplate: TemplateRef<any>;
+  @ContentChild('item') public itemTemplate: TemplateRef<any>;
+  @ContentChild('row') public rowTemplate: TemplateRef<any>;
+  @ContentChild('children') public childrenTemplate: TemplateRef<any>;
 
-  @ContentChild('row')
-  public rowTemplate: TemplateRef<any>;
-
-  @ContentChild('children')
-  public childrenTemplate: TemplateRef<any>;
+  @ViewChild('itemDefault') public itemDefaultTemplate: TemplateRef<any>;
 
   readonly backend: DragBackend;
   private x: number;

@@ -6,6 +6,7 @@ import { Coordinate } from './_interfaces/geometry';
 import { DropletRoot, DropletSource, DropletPreview } from './_interfaces/droplet';
 import { Generator } from './generator-abstract';
 import { DefaultGenerator } from './generator-default';
+import { HiddenDataHelper } from './hidden-data-helper';
 
 export class DragBackend {
 
@@ -53,10 +54,11 @@ export class DragBackend {
   }
 
   private getActions() {
+    let undo = null;
     return {
       beginDrag: (source: string, o) => {
         this.source = this.registered[source];
-        // TODO mark source
+        undo = HiddenDataHelper.setHidden(HiddenDataHelper.IS_SELECTED, this.source.context, true);
         this.isDragging = !!source.length;
         this.updateDropZones();
       },
@@ -70,8 +72,8 @@ export class DragBackend {
         this.generator.drop(matches, this.begin, this.lastCoordinate);
       },
       endDrag: () => {
+        if (undo) undo();
         this.source = null;
-        // TODO remove source marker
         this.begin = null;
         this.isDragging = false;
       }
@@ -104,7 +106,7 @@ export class DragBackend {
   }
 
   public updateDropZones() {
-    this.generator = new DefaultGenerator(this.root.context);
+    this.generator = new DefaultGenerator(this.root.getNativeElement(), this.root.context);
     this.engine.clear();
     for(let target of this.generator.tree.generateTargets()) {
       this.engine.insert(DragBackend.getRBushRectangleFromTarget(target));

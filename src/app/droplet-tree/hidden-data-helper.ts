@@ -20,7 +20,6 @@ export class HiddenDataHelper {
 
   static setHidden(name: string, context: any, data: any) {
     var droplet = HiddenDataHelper.getOrInitDropletProperty(context, true);
-    if (droplet[name]) throw 'Only one ' + name + ' can be attached to the same context.';
     droplet[name] = data;
     return () => { delete droplet[name]; };
   }

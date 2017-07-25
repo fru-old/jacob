@@ -1,5 +1,26 @@
 
-<ul class="tree-root" droplet-tree-root [context]="tree" #treeRoot>
+
+<ul [droplet-tree-root]="tree">
+
+  <ng-template #item2 let-item let-index="index">
+    <li>{{index}} {{item.title}} <button>Action</button></li>
+  </ng-template>
+
+  <ng-template #row let-recurse="recurse">
+    <li>
+      <ng-template [ngTemplateOutlet]="recurse"></ng-template>
+    </li>
+  </ng-template>
+
+  <ng-template #children>Test2
+    <ul>
+      <!--<ng-template [ngTemplateOutlet]="recurse"></ng-template>-->
+    </ul>
+  </ng-template>
+</ul>
+
+
+<!--<ul class="tree-root" [droplet-tree-root]="tree" #treeRoot>
   <li droplet-tree-preview [context]="tree[0]" [root]="treeRoot">
     <span class="tree-element" droplet-tree-node [context]="tree[0]" [root]="treeRoot">
       {{tree[0].title}} <button>Action</button>
@@ -17,4 +38,4 @@
       </li>
     </ul>
   </li>
-</ul>
+</ul>-->

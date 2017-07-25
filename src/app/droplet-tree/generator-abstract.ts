@@ -6,8 +6,8 @@ import { HiddenDataHelper } from './hidden-data-helper';
 
 export abstract class Generator {
 
-  readonly transformer = new FlatTreeTransformer(this);
-  abstract readonly tree: FlatTreeContainer;
+  transformer: FlatTreeTransformer;
+  tree: FlatTreeContainer;
 
   abstract isSelected(node): boolean;
   abstract getChildren(node, create?: boolean): object[];

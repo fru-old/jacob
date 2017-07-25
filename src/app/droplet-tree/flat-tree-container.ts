@@ -62,7 +62,7 @@ export class FlatTreeContainer {
       let parent = parentOnLevel[level-1];
       if(parent && index === 0) parent.firstChild = container;
       if(parent && index === rowsRaw.length - 1) parent.lastChild = container;
-
+      
       // Here isSelected is still garantied to be a full list
       if(container.isSelected.some(x => !x)) {
         let children = this.generator.getChildren(rowsRaw[index]);

@@ -7,15 +7,18 @@ import { Generator } from './generator-abstract';
 
 export class DefaultGenerator extends Generator {
 
+  private options: any;
   constructor (private root: HTMLElement, private raw: any[], options: any = {}) {
     super();
-    this.options.levelWidth = options.levelWidth || 20;
-    this.options.spacing    = options.spacing    || 8;
-    this.options.childProperty = options.childProperty || 'children';
-    this.options.multiProperty = options.multiProperty || 'inline';
+    this.options = {
+      levelWidth: options.levelWidth || 20,
+      spacing:    options.spacing    || 8,
+      childProperty: options.childProperty || 'children',
+      multiProperty: options.multiProperty || 'inline'
+    };
+    this.tree = new FlatTreeContainer(this, this.raw);
+    this.transformer = new FlatTreeTransformer(this);
   }
-  private options: any = {};
-  readonly tree: FlatTreeContainer = new FlatTreeContainer(this, this.raw);
 
   private getProperty(node, property, create?: boolean) {
     if (create && !node[property]) node[property] = [];
@@ -62,7 +65,7 @@ export class DefaultGenerator extends Generator {
     };
   }
 
-  getTargetBox(node, direction: Direction, before: boolean): BoundingBox {
+  getTargetBox(node, direction: Direction, isFirst: boolean): BoundingBox {
     let box = this.getNodeRect(node);
     let halfHeight = Math.ceil(box.height / 2);
     if (direction === Direction.TOP) box.height = halfHeight;

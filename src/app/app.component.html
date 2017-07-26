@@ -3,19 +3,7 @@
 <ul [droplet-tree-root]="tree">
 
   <ng-template #item let-item let-index="index">
-    <li>{{index}} {{item.title}} <button>Action</button></li>
-  </ng-template>
-
-  <ng-template #row let-recurse="recurse">
-    <li>
-      <ng-template [ngTemplateOutlet]="recurse"></ng-template>
-    </li>
-  </ng-template>
-
-  <ng-template #children>Test2
-    <ul>
-      <!--<ng-template [ngTemplateOutlet]="recurse"></ng-template>-->
-    </ul>
+    {{index}} {{item.title}} <button>Action</button>
   </ng-template>
 </ul>
 

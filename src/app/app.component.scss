@@ -22,7 +22,7 @@
 .tree-root {
   @include clearfix-micro();
   padding: 8px 8px 0 8px;
-  max-width: 300px;
+  list-style-type: none;
 }
 
 .highlight {
@@ -31,9 +31,9 @@
 
 // Default theme
 
-ul {
-  list-style-type: none;
+.tree-root ul {
   padding-left: 20px;
+  list-style-type: none;
 }
 
 .tree-element {

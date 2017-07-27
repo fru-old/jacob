@@ -1,10 +1,44 @@
-import { Component, Input, ElementRef, Inject } from '@angular/core';
-import { ContentChild, ViewChild, TemplateRef } from '@angular/core';
+import { Component, Input, ElementRef, Inject, ChangeDetectionStrategy } from '@angular/core';
+import { ContentChild, ViewChild, TemplateRef, IterableDiffer } from '@angular/core';
 import { DragBackend } from '../drag-backend';
 import { DropletRoot } from '../_interfaces/droplet';
 import { BoundingBox } from '../_interfaces/geometry';
 import { Generator } from '../generator-abstract';
 import { DropletTreePreview } from './droplet-tree-preview';
+
+@Component({
+  selector: 'droplet-tree-root-rows',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <!-- Children content -->
+    <ng-container *ngFor="let row of c; let index = index">
+      <li>
+        <ng-container *ngTemplateOutlet="itemContent; context: r.getSubContext(row)"></ng-container>
+      </li>
+    </ng-container>
+
+    <!-- Item content -->
+    <ng-template #itemContent let-c let-r="r">
+      <span droplet-tree-preview [context]="c" [root]="r">
+        <span class="tree-element" droplet-tree-node [context]="c" [root]="r">
+        <ng-container
+          *ngTemplateOutlet="r.itemTemplate || r.itemDefaultTemplate; context: r.getItemContext(c)">
+        </ng-container>
+        </span>
+        <ul *ngIf="r.getChildren(c) && r.getChildren(c).length">
+          <droplet-tree-root-rows [c]="r.getChildren(c)" [r]="r"></droplet-tree-root-rows>
+        </ul>
+      </span>
+    </ng-template>
+  `
+})
+export class DropletTreeRootRows {
+  @Input() c: any;
+  @Input() r: DropletTreeRoot;
+  constructor () {
+    //console.log(differs);private differs: IterableDiffer<any>
+  }
+}
 
 @Component({
   selector: '[droplet-tree-root]',
@@ -23,45 +57,7 @@ import { DropletTreePreview } from './droplet-tree-preview';
       <ul><ng-container *ngTemplateOutlet="template; context: context"></ng-container></ul>
     </ng-template>
 
-    <!-- Children content -->
-    <ng-template #childrenContent let-c let-r="r">
-      <ng-container *ngFor="let row of c; let index = index">
-        <li>
-          <ng-container *ngTemplateOutlet="itemContent; context: r.getSubContext(row)"></ng-container>
-        </li>
-      </ng-container>
-    </ng-template>
-
-    <!-- Item content -->
-    <ng-template #itemContent let-c let-r="r">
-      <span droplet-tree-preview [context]="c" [root]="r">
-        <span class="tree-element" droplet-tree-node [context]="c" [root]="r">
-        <ng-container
-          *ngTemplateOutlet="r.itemTemplate || r.itemDefaultTemplate; context: r.getItemContext(c)">
-        </ng-container>
-        </span>
-        <ul *ngIf="getChildren(c) && getChildren(c).length">
-          <ng-container *ngTemplateOutlet="childrenContent; context: r.getSubContext(getChildren(c))"></ng-container>
-        </ul>
-      </span>
-    </ng-template>
-
-    <ng-container *ngTemplateOutlet="childrenContent; context: getRootContext()"></ng-container>
-
-    <!--<ng-container
-      *ngTemplateOutlet="rowLoop; context: {recurse: childrenTemplate}">
-    </ng-container>-->
-
-    <!--
-    <ng-container
-      *ngTemplateOutlet="rowTemplate; context: {recurse: childrenTemplate}"
-      ></ng-container>
-    <ng-container *ngFor="let item of ['test', 2]; let index = index">
-      <ng-container
-        *ngTemplateOutlet="itemTemplate2 || itemDefaultTemplate; context: {$implicit: item, index: index}">
-      </ng-container>
-    </ng-container>
-    -->
+    <droplet-tree-root-rows [c]="context" [r]="root"></droplet-tree-root-rows>
   `
 })
 export class DropletTreeRoot implements DropletRoot {
@@ -81,13 +77,12 @@ export class DropletTreeRoot implements DropletRoot {
   private width: number;
   private height: number;
   private preview: boolean = false;
+  private root: DropletTreeRoot = this;
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {
     this.backend = new DragBackend(this);
-    console.log(this);
   }
 
-  getRootContext() { return this.getSubContext(this.context); }
   getSubContext(item, template?) { return { $implicit: item, r: this, template }; }
   getItemContext(item, index) { return { $implicit: item, index }; }
 

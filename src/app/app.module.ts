@@ -9,7 +9,6 @@ import { AppComponent } from './app.component';
 import { DropletTreeNode } from './droplet-tree/angular/droplet-tree-node';
 import { DropletTreeRoot, DropletTreeRootRows } from './droplet-tree/angular/droplet-tree-root';
 import { DropletTreePreview } from './droplet-tree/angular/droplet-tree-preview';
-import { DropletTreeInner } from './droplet-tree/angular/droplet-tree-inner';
 
 @NgModule({
   declarations: [
@@ -17,7 +16,6 @@ import { DropletTreeInner } from './droplet-tree/angular/droplet-tree-inner';
     DropletTreeRoot,
     DropletTreeNode,
     DropletTreePreview,
-    DropletTreeInner,
     DropletTreeRootRows
   ],
   imports: [

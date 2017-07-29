@@ -8,9 +8,9 @@ import { Component, ViewEncapsulation } from '@angular/core';
 })
 export class AppComponent {
   tree : any = [
-    {title: '1'},
-    {title: '2', children: [
-      {title: '2.1'}
+    {title: '1', id: 1},
+    {title: '2', id: 2, children: [
+      {title: '2.1', id: 3}
     ]}
   ]
 }

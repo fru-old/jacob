@@ -6,7 +6,7 @@ import { Coordinate } from './_interfaces/geometry';
 import { DropletRoot, DropletSource, DropletPreview } from './_interfaces/droplet';
 import { Generator } from './generator-abstract';
 import { DefaultGenerator } from './generator-default';
-import { HiddenDataHelper } from './hidden-data-helper';
+import { DragRegistry } from './drag-registry';
 
 export class DragBackend {
 
@@ -30,13 +30,12 @@ export class DragBackend {
   private engine: any = rbush();
   private backend: HtmlBackend;
   private isDragging: boolean = false;
-  private registered: {[key: string]: DropletSource} = {};
   private source: DropletSource;
   private begin: Coordinate;
   private lastCoordinate: Coordinate;
   generator: Generator;
 
-  public constructor(private root: DropletRoot) {
+  constructor(private root: DropletRoot, public registry: DragRegistry) {
     this.backend = this.getBackend();
     this.backend.connectDropTarget('root', root.getNativeElement());
   }
@@ -54,11 +53,11 @@ export class DragBackend {
   }
 
   private getActions() {
-    let undo = null;
+    let undo;
     return {
       beginDrag: (source: string, o) => {
-        this.source = this.registered[source];
-        undo = HiddenDataHelper.setHidden(HiddenDataHelper.IS_SELECTED, this.source.context, true);
+        this.source = this.registry.getRegisteredSource(source);
+        undo = this.registry.setSelected(this, this.source, true);
         this.isDragging = !!source.length;
         this.updateDropZones();
       },
@@ -83,37 +82,31 @@ export class DragBackend {
   private getMonitor() {
     return {
       isDragging: () => { return this.isDragging; },
-      getSourceId: () => { return this.source && this.source.getId(); },
+      getSourceId: () => { return this.source && this.backend.getId(this.source.context); },
       didDrop: () => { return false; },
       canDropOnTarget: (_, test) => { return this.getMatchesAnSetBegin(null).length > 0 },
       getItemType: () => {}
     }
   }
 
-  public connect(source: DropletSource, preview: DropletPreview) {
-    let sourceElement = source.getNativeElement();
-    let previewElement = (preview && preview.getNativeElement()) || sourceElement;
-
-    let undoSource = this.backend.connectDragSource(source.getId(), sourceElement);
-    let undoPreview = this.backend.connectDragPreview(source.getId(), previewElement);
-
-    this.registered[source.getId()] = source;
-    return () => {
-      delete this.registered[source.getId()];
+  connectSourceAndPreview(id, source: DropletSource, preview: DropletPreview) {
+    let undoSource = this.backend.connectDragSource(id, source.getNativeElement());
+    let undoPreview = this.backend.connectDragPreview(id, preview.getNativeElement());
+    return function () {
       undoSource();
       undoPreview();
-    };
+    }
   }
 
-  public updateDropZones() {
-    this.generator = new DefaultGenerator(this.root.getNativeElement(), this.root.context);
+  updateDropZones() {
+    this.generator = new DefaultGenerator(this.root.getNativeElement(), this.root.context, {}, this.registry);
     this.engine.clear();
     for(let target of this.generator.tree.generateTargets()) {
       this.engine.insert(DragBackend.getRBushRectangleFromTarget(target));
     }
   }
 
-  public teardown() {
+  teardown() {
     if(this.backend) this.backend.teardown();
     if(this.engine) this.engine.clear();
   }

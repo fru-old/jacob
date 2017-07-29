@@ -2,7 +2,6 @@ import { BoundingBox, Coordinate, Direction } from './_interfaces/geometry';
 import { Target } from './_interfaces/target';
 import { FlatTreeContainer } from './flat-tree-container';
 import { FlatTreeTransformer } from './flat-tree-transformer';
-import { HiddenDataHelper } from './hidden-data-helper';
 
 export abstract class Generator {
 

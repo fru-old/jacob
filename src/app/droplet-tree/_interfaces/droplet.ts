@@ -11,10 +11,10 @@ export interface DropletRoot {
 
 export interface DropletSource {
   getNativeElement(): HTMLElement;
-  getId(): string;
   context: any;
 }
 
 export interface DropletPreview {
   getNativeElement(): HTMLElement;
+  context: any;
 }

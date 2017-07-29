@@ -5,6 +5,7 @@ import { DropletRoot } from '../_interfaces/droplet';
 import { BoundingBox } from '../_interfaces/geometry';
 import { Generator } from '../generator-abstract';
 import { DropletTreePreview } from './droplet-tree-preview';
+import { DragRegistry } from '../drag-registry';
 
 @Component({
   selector: 'droplet-tree-root-rows',
@@ -80,7 +81,8 @@ export class DropletTreeRoot implements DropletRoot {
   private root: DropletTreeRoot = this;
 
   constructor (@Inject(ElementRef) private reference: ElementRef) {
-    this.backend = new DragBackend(this);
+    let registry = new DragRegistry(c => c.id);
+    this.backend = new DragBackend(this, registry);
   }
 
   getSubContext(item, template?) { return { $implicit: item, r: this, template }; }

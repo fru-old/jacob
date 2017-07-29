@@ -2,13 +2,13 @@ import { BoundingBox, Coordinate, Direction } from './_interfaces/geometry';
 import { Target } from './_interfaces/target';
 import { FlatTreeContainer } from './flat-tree-container';
 import { FlatTreeTransformer } from './flat-tree-transformer';
-import { HiddenDataHelper } from './hidden-data-helper';
 import { Generator } from './generator-abstract';
+import { DragRegistry } from './drag-registry';
 
 export class DefaultGenerator extends Generator {
 
   private options: any;
-  constructor (private root: HTMLElement, private raw: any[], options: any = {}) {
+  constructor (private root: HTMLElement, private raw: any[], options: any = {}, private registry: DragRegistry) {
     super();
     this.options = {
       levelWidth: options.levelWidth || 20,
@@ -36,13 +36,12 @@ export class DefaultGenerator extends Generator {
   getLevelWidth(): number { return this.options.levelWidth; }
 
   isSelected(node): boolean {
-    return HiddenDataHelper.getHidden(HiddenDataHelper.IS_SELECTED, node);
+    return this.registry.isSelected(node);
   }
 
   private getNodeRect(node, dontUsePreview?: boolean): BoundingBox {
-    let key = (this.isSelected(node) && !dontUsePreview) ? HiddenDataHelper.PREVIEW : HiddenDataHelper.SOURCE;
-    let element = HiddenDataHelper.getHidden(key, node).reference.nativeElement;
-    return this.getElementRect(element);
+    let usePreview = this.isSelected(node) && !dontUsePreview;
+    return this.getElementRect(this.registry.getDomNode(node, usePreview));
   }
 
   private getElementRect(element: HTMLElement): BoundingBox {

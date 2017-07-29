@@ -1,7 +1,6 @@
 import { Component, Input, ElementRef, Inject, SimpleChange } from '@angular/core';
 import { OnChanges, OnDestroy } from '@angular/core';
 import { DropletPreview } from '../_interfaces/droplet';
-import { HiddenDataHelper } from '../hidden-data-helper';
 import { DropletTreeRoot } from './droplet-tree-root';
 
 @Component({
@@ -26,6 +25,6 @@ export class DropletTreePreview implements DropletPreview, OnChanges, OnDestroy 
 
   ngOnChanges(changes: {[ propName: string]: SimpleChange}) {
     if(this.undo) this.undo();
-    this.undo = HiddenDataHelper.setHidden(HiddenDataHelper.PREVIEW, this.context, this);
+    this.undo = this.root.backend.registry.registerPreview(this.root.backend, this);
   }
 }

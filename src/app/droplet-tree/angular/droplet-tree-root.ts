@@ -9,7 +9,7 @@ import { DragRegistry } from '../drag-registry';
 
 @Component({
   selector: 'droplet-tree-root-rows',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  //changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Children content -->
     <ng-container *ngFor="let row of c; let index = index">

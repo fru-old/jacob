@@ -82,7 +82,7 @@ export class DragBackend {
   private getMonitor() {
     return {
       isDragging: () => { return this.isDragging; },
-      getSourceId: () => { return this.source && this.backend.getId(this.source.context); },
+      getSourceId: () => { return this.source && this.registry.getId(this.source.context); },
       didDrop: () => { return false; },
       canDropOnTarget: (_, test) => { return this.getMatchesAnSetBegin(null).length > 0 },
       getItemType: () => {}

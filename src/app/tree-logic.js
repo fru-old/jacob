@@ -15,12 +15,40 @@ class Path {
   private getParentRow() {
     return this.getAncestorRow(this.getLevel() - 1);
   }
+
   private getAncestorRow(level) {
     if (level === 0) return null;
     return new Path(this.hierarchy.slice(0, level));
   }
+
   private getIndicatedLevel(offset, options) {
     return this.getLevel() + Math.round(offset / options.levelWidth);
+  }
+}
+
+class TreeIterator {
+  constructor(tree) {
+    this.tree = tree;
+  }
+
+  iterate(visitor, options, context) {
+    if (!context) context = this.tree;
+    for (var row of context) {
+      let selected = true;
+      visitor(row)
+    }
+  }
+}
+
+class TreeTransformer {
+  insertAtIndex(path, index) {
+
+  }
+  insertIntoRow(path, index) {
+
+  }
+  moveChildren(path, index) {
+
   }
 }
 
